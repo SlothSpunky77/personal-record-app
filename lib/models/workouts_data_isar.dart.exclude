@@ -1,0 +1,17 @@
+import 'package:isar/isar.dart';
+part 'workouts_data_isar.g.dart';
+
+@collection
+class WorkoutHistory {
+  Id referenceID = Isar.autoIncrement;
+  late String name;
+  late double? weight;
+  late int? reps;
+  late double? bodyweight;
+  late double? distance;
+  late int? milliSeconds;
+
+  WorkoutHistory({
+    required this.name,
+  });
+}

@@ -1,0 +1,204 @@
+import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pr/models/group_isar.dart';
+import 'package:pr/models/workouts_isar.dart';
+
+class Database {
+  static late Isar dbGroup;
+  static late Isar dbWorkouts;
+  static late Isar dbWorkoutData;
+
+  //Initialize
+  Future<void> initializeGroup() async {
+    final dir = await getApplicationDocumentsDirectory();
+    dbGroup = await Isar.open(
+      name: "group",
+      [MuscleGroupSchema],
+      directory: dir.path,
+    );
+  }
+
+  Future<void> initializeWorkout() async {
+    final dir = await getApplicationDocumentsDirectory();
+    dbWorkouts = await Isar.open(
+      name: "workouts",
+      [WorkoutDetailSchema],
+      directory: dir.path,
+    );
+  }
+
+  // Future<void> initializeWorkoutData() async {
+  //   final dir = await getApplicationDocumentsDirectory();
+  //   dbWorkoutData = await Isar.open(
+  //     name: "workoutData",
+  //     [WorkoutHistorySchema],
+  //     directory: dir.path,
+  //   );
+  // }
+
+  //Create
+  newGroup(String textInput, int colorInput) async {
+    final newGroup = MuscleGroup(text: textInput, color: colorInput);
+    late int id;
+    await dbGroup.writeTxn(() async {
+      id = await dbGroup.muscleGroups.put(newGroup);
+    });
+    final newWorkout = WorkoutDetail(workoutID: id, workouts: []);
+    await dbWorkouts.writeTxn(() => dbWorkouts.workoutDetails.put(newWorkout));
+  }
+
+  //Read
+  fetchGroups() async {
+    List fetchedGroups = await dbGroup.muscleGroups.where().findAll();
+    return fetchedGroups;
+  }
+
+  fetchGroup(Id id) async {
+    MuscleGroup? group =
+        await dbGroup.muscleGroups.filter().groupIDEqualTo(id).findFirst();
+    if (group == null) {
+      return MuscleGroup(text: "Failed fetch", color: 4294967295);
+    } else {
+      return group;
+    }
+  }
+
+  //Update
+  updateGroup(int id, String newTextInput) async {
+    final existingName = await dbGroup.muscleGroups.get(id);
+    if (existingName != null) {
+      existingName.text = newTextInput;
+      await dbGroup.writeTxn(() => dbGroup.muscleGroups.put(existingName));
+    }
+  }
+
+  //Delete
+  Future<void> deleteGroup(int id) async {
+    await dbGroup.writeTxn(() => dbGroup.muscleGroups.delete(id));
+    await dbWorkouts.writeTxn(() => dbWorkouts.workoutDetails.delete(id));
+  }
+
+  //Create
+  Future<void> newWorkout(
+    int id,
+    String name,
+  ) async {
+    WorkoutDetail workout = await fetchWorkouts(id);
+    List<WorkoutEntry> tempList = List<WorkoutEntry>.from(workout.workouts);
+    WorkoutEntry newWorkoutItem = WorkoutEntry()
+      ..name = name
+      ..logs = [];
+    tempList.add(newWorkoutItem);
+    workout.workouts = tempList;
+    await dbWorkouts.writeTxn(
+      () => dbWorkouts.workoutDetails.put(workout),
+    );
+  }
+
+  //Read
+  Future<WorkoutDetail> fetchWorkouts(Id id) async {
+    WorkoutDetail? fetchedWorkouts = await dbWorkouts.workoutDetails
+        .filter()
+        .workoutIDEqualTo(id)
+        .findFirst();
+    if (fetchedWorkouts == null) {
+      WorkoutDetail failed = WorkoutDetail(
+        workoutID: -1,
+        workouts: [
+          WorkoutEntry()
+            ..name = "Failed Fetch"
+            ..logs = []
+        ],
+      );
+      return failed;
+    }
+    return fetchedWorkouts;
+  }
+
+  updateWorkout(int id, String previousName, String newName) async {
+    final existingWorkout = await dbWorkouts.workoutDetails.get(id);
+    if (existingWorkout != null) {
+      for (int i = 0; i < existingWorkout.workouts.length; i++) {
+        if (existingWorkout.workouts[i].name == previousName) {
+          final oldLogs = existingWorkout.workouts[i].logs;
+          existingWorkout.workouts[i] = WorkoutEntry()
+            ..name = newName
+            ..logs = oldLogs;
+          //TODO: I know that this is horribly wrong, I'll change this later
+          await dbWorkouts
+              .writeTxn(() => dbWorkouts.workoutDetails.put(existingWorkout));
+        }
+      }
+    }
+  }
+
+  //Delete
+  deleteWorkouts(int id) async {
+    await dbWorkouts.writeTxn(() => dbWorkouts.workoutDetails.delete(id));
+  }
+
+  deleteWorkoutItem(int id, String name) async {
+    //this will not work, modify the code
+    late List<WorkoutEntry> tempList;
+    final existingWorkout = await dbWorkouts.workoutDetails.get(id);
+
+    if (existingWorkout != null) {
+      tempList = existingWorkout.workouts;
+      for (int i = 0; i < tempList.length; i++) {
+        if (tempList[i] == name) {
+          tempList.removeAt(i);
+          break;
+        }
+      }
+      existingWorkout.workouts = tempList;
+      await dbWorkouts.writeTxn(() => dbWorkouts.workoutDetails
+          .put(existingWorkout)); //do you need a temporary list?
+    }
+  }
+
+  // addWorkoutData(String workoutName, double? weight, int? reps,
+  //     double? bodyweight, double? distance, int? milliSeconds) async {
+  //   final workoutData = WorkoutHistory(name: workoutName)
+  //     ..weight = weight
+  //     ..reps = reps
+  //     ..bodyweight = bodyweight
+  //     ..distance = distance
+  //     ..milliSeconds = milliSeconds;
+  //   await dbWorkoutData
+  //       .writeTxn(() => dbWorkoutData.workoutHistorys.put(workoutData));
+  // }
+
+  // getCount() async {
+  //   int count = await dbWorkoutData.workoutHistorys.count();
+  //   return count;
+  // }
+
+  // Fetch logs for a workout
+  Future<List<Session>> fetchWorkoutLogs(Id groupId, String workoutName) async {
+    WorkoutDetail workout = await fetchWorkouts(groupId);
+    final entry = workout.workouts.firstWhere(
+      (element) => element.name == workoutName,
+      // orElse: () => WorkoutEntry(name: workoutName, logs: []),
+    );
+    return entry.logs;
+  }
+
+  // Add a log entry for a workout
+  Future<void> addWorkoutLog(
+      Id groupId, String workoutName, List<Sets> sets) async {
+    WorkoutDetail workout = await fetchWorkouts(groupId);
+    final workoutsList = List<WorkoutEntry>.from(workout.workouts);
+    final index =
+        workoutsList.indexWhere((element) => element.name == workoutName);
+    if (index != -1) {
+      List<Session> sessionsList = List<Session>.from(workoutsList[index].logs);
+      Session newSession = Session()
+        ..dateTime = DateTime.now()
+        ..sets = sets;
+      sessionsList.add(newSession);
+      workoutsList[index].logs = sessionsList;
+      workout.workouts = workoutsList;
+      await dbWorkouts.writeTxn(() => dbWorkouts.workoutDetails.put(workout));
+    }
+  }
+}

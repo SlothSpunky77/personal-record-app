@@ -1,0 +1,8 @@
+import 'workout.dart';
+
+class MuscleGroup {
+  final String name;
+  final List<Workout> workout;
+
+  MuscleGroup({required this.name, required this.workout});
+}
