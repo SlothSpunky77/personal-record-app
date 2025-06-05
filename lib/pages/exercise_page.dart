@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import 'package:pr/models/database.dart';
-import 'package:pr/models/workouts_isar.dart';
 import 'package:pr/theme/theme.dart';
 //import 'package:pr/models/number_widget.dart';
-import 'package:pr/pages/workout_log_page.dart';
+import 'package:pr/pages/log_page.dart';
 
 class ExercisePage extends StatefulWidget {
-  final Id id;
+  final int id;
   final String groupName;
   final int color;
   const ExercisePage({
@@ -23,10 +21,9 @@ class ExercisePage extends StatefulWidget {
 
 class _ExercisePageState extends State<ExercisePage> {
   final nameController = TextEditingController();
-  List<WorkoutEntry> workoutsList = [];
-
-  // final bwController = TextEditingController();
-  // final weightController = TextEditingController();
+  List<Workout> workoutsList = [];
+  final db = AppDatabase();
+  int? selectedWorkoutIndex;
 
   @override
   void initState() {
@@ -34,17 +31,12 @@ class _ExercisePageState extends State<ExercisePage> {
     workoutFetch();
   }
 
-  workoutFetch() async {
-    WorkoutDetail workoutDeet = await Database().fetchWorkouts(widget.id);
-    setState(() {
-      workoutsList = workoutDeet.workouts;
-    });
+  Future<void> workoutFetch() async {
+    workoutsList = await db.fetchWorkouts(widget.id);
+    setState(() {});
   }
 
   void createWorkout() {
-    // int setsCount = 0;
-    // int repsCount = 10;
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -102,79 +94,6 @@ class _ExercisePageState extends State<ExercisePage> {
                 ),
               ),
             ),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: Text(
-            //         'Sets: ',
-            //         style:
-            //             TextStyle(color: darkMode.colorScheme.inversePrimary),
-            //       ),
-            //     ),
-            //     NumberStep(
-            //         initialValue: setsCount,
-            //         onValueChanged: (newValue) => setsCount = newValue),
-            //   ],
-            // ),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: Text(
-            //         'Reps: ',
-            //         style:
-            //             TextStyle(color: darkMode.colorScheme.inversePrimary),
-            //       ),
-            //     ),
-            //     NumberStep(
-            //         initialValue: repsCount,
-            //         onValueChanged: (newValue) => repsCount = newValue),
-            //   ],
-            // ),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: Text(
-            //         'Bodyweight: ',
-            //         style:
-            //             TextStyle(color: darkMode.colorScheme.inversePrimary),
-            //       ),
-            //     ),
-            //     SizedBox(
-            //       width: 130,
-            //       child: TextField(
-            //         controller: bwController,
-            //         style: TextStyle(
-            //           color: darkMode.colorScheme.inversePrimary,
-            //         ),
-            //         keyboardType: TextInputType.number,
-            //         // inputFormatters: [
-            //         //   FilteringTextInputFormatter.digitsOnly,
-            //         // ],
-            //       ),
-            //     ),
-            //   ],
-            // ),
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: Text(
-            //         'Weight: ',
-            //         style:
-            //             TextStyle(color: darkMode.colorScheme.inversePrimary),
-            //       ),
-            //     ),
-            //     SizedBox(
-            //       width: 130,
-            //       child: TextField(
-            //         controller: weightController,
-            //         style: TextStyle(
-            //           color: darkMode.colorScheme.inversePrimary,
-            //         ),
-            //         keyboardType: TextInputType.number,
-            //       ),
-            //     ),
-            //   ],
-            // ),
             //find out how to return a value from NumberStep so that you can pass it into the database
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -197,18 +116,9 @@ class _ExercisePageState extends State<ExercisePage> {
                   child: MaterialButton(
                     onPressed: () async {
                       //add date parameter later
+                      await db.newWorkout(widget.id, nameController.text);
+                      await workoutFetch();
 
-                      await Database().newWorkout(
-                        widget.id,
-                        nameController.text,
-                        // setsCount,
-                        // repsCount,
-                        // double.parse(bwController.text),
-                        // double.parse(weightController.text),
-                        //account for blank entries
-                      );
-                      // bwController.clear();
-                      // weightController.clear();
                       Navigator.pop(context);
                       workoutFetch();
                       nameController.clear();
@@ -228,6 +138,71 @@ class _ExercisePageState extends State<ExercisePage> {
     );
   }
 
+  void editWorkout(Workout workout) {
+    nameController.text = workout.name;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: darkMode.colorScheme.primary,
+        title: Text(
+          'Edit Workout',
+          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+        ),
+        content: TextField(
+          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Edit workout name...',
+            hintStyle: TextStyle(color: Color.fromARGB(255, 127, 127, 127)),
+          ),
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await db.updateWorkout(workout.workoutID, nameController.text);
+              await workoutFetch();
+              nameController.clear();
+              selectedWorkoutIndex = null;
+            },
+            child: Text(
+              'UPDATE',
+              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void deleteWorkout(int id) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: darkMode.colorScheme.primary,
+        title: Text(
+          'Delete workout?',
+          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+        ),
+        actions: [
+          MaterialButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await db.deleteWorkoutItem(id);
+              await workoutFetch();
+              selectedWorkoutIndex = null;
+            },
+            child: Text(
+              'DELETE',
+              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,6 +212,23 @@ class _ExercisePageState extends State<ExercisePage> {
         title: Text(widget.groupName),
         backgroundColor: darkMode.colorScheme.primary,
         foregroundColor: darkMode.colorScheme.inversePrimary,
+        actions: selectedWorkoutIndex != null
+            ? [
+                IconButton(
+                  onPressed: () {
+                    editWorkout(workoutsList[selectedWorkoutIndex!]);
+                  },
+                  icon: const Icon(Icons.edit),
+                ),
+                IconButton(
+                  onPressed: () {
+                    deleteWorkout(
+                        workoutsList[selectedWorkoutIndex!].workoutID);
+                  },
+                  icon: const Icon(Icons.delete),
+                ),
+              ]
+            : [],
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -275,15 +267,26 @@ class _ExercisePageState extends State<ExercisePage> {
                             ),
                           ),
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => WorkoutLogPage(
-                                  groupId: widget.id,
-                                  workoutName: workout.name,
+                            if (selectedWorkoutIndex != null) {
+                              setState(() {
+                                selectedWorkoutIndex = null;
+                              });
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => WorkoutLogPage(
+                                    workoutName: workout.name,
+                                    workoutId: workout.workoutID,
+                                  ),
                                 ),
-                              ),
-                            );
+                              );
+                            }
+                          },
+                          onLongPress: () {
+                            setState(() {
+                              selectedWorkoutIndex = index;
+                            });
                           },
                         ),
                       );
@@ -307,6 +310,7 @@ class _ExercisePageState extends State<ExercisePage> {
   }
 }
 
+//EDIT: the following is bullshit
 //this page is for adding workouts only. If a workout has been used in a workout session by
 //the user, then clicking on the workout tile gives you a graph of progress, else it
 //gives you a blank page with a message

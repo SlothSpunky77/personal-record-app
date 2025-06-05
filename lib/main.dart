@@ -4,14 +4,13 @@ import 'package:pr/pages/calendar_page.dart';
 import 'package:pr/pages/onboard.dart';
 import 'package:pr/pages/pr_page.dart';
 import 'package:pr/theme/theme.dart';
-import 'package:pr/models/database.dart';
 import 'package:pr/pages/home_page.dart';
 //import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Database().initializeGroup();
-  await Database().initializeWorkout();
+  // await Database().initializeGroup();
+  // await Database().initializeWorkout();
   runApp(const MyApp());
 }
 

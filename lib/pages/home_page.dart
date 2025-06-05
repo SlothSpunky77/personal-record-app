@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:pr/models/database.dart';
 import 'package:pr/pages/exercise_page.dart';
-import 'package:pr/models/group_isar.dart';
 import 'package:pr/theme/theme.dart';
+
+//TODO: add an info section wwith the floatingactionbutton
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,7 +17,8 @@ class _HomePageState extends State<HomePage> {
   final textController = TextEditingController();
   int? selectedTileIndex;
   int currentPageIndex = 0;
-  List groupsList = [];
+  List<MuscleGroup> groupsList = [];
+  final db = AppDatabase();
 
   @override
   void initState() {
@@ -24,8 +26,8 @@ class _HomePageState extends State<HomePage> {
     groupFetch();
   }
 
-  groupFetch() async {
-    List groups = await Database().fetchGroups();
+  Future<void> groupFetch() async {
+    List<MuscleGroup> groups = await db.fetchGroups();
     setState(() {
       groupsList = groups;
     });
@@ -150,9 +152,9 @@ class _HomePageState extends State<HomePage> {
           MaterialButton(
             onPressed: () async {
               Navigator.pop(context);
-              await Database().newGroup(textController.text, pickedColor.value);
+              await db.newGroup(textController.text, pickedColor.value);
               pickedColor = Colors.white;
-              groupFetch();
+              await groupFetch();
               textController.clear();
             },
             child: Text(
@@ -166,7 +168,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void editGroup(MuscleGroup group) {
-    textController.text = group.text;
+    textController.text = group.groupName;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -190,8 +192,8 @@ class _HomePageState extends State<HomePage> {
           MaterialButton(
             onPressed: () async {
               Navigator.pop(context);
-              await Database().updateGroup(group.groupID, textController.text);
-              groupFetch();
+              await db.updateGroup(group.groupID, textController.text);
+              await groupFetch();
               textController.clear();
               selectedTileIndex = null;
             },
@@ -218,8 +220,8 @@ class _HomePageState extends State<HomePage> {
           MaterialButton(
             onPressed: () async {
               Navigator.pop(context);
-              await Database().deleteGroup(id);
-              groupFetch();
+              await db.deleteGroup(id);
+              await groupFetch();
               selectedTileIndex = null;
             },
             child: Text(
@@ -230,142 +232,140 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-    Database().deleteGroup(id);
-    selectedTileIndex = null;
   }
 
-  startWorkout() {
-    List<int> selectedIndices = [];
-    List idList = [];
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          side: BorderSide(
-            color: darkMode.colorScheme.secondary,
-            width: 7,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: darkMode.colorScheme.surface,
-        child: StatefulBuilder(
-          builder: (context, setState) {
-            return SizedBox(
-              height: 500,
-              width: 400,
-              child: Container(
-                padding: const EdgeInsets.only(
-                    left: 20, right: 20, bottom: 10, top: 10),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10, top: 5),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Add to today's workout",
-                          style: TextStyle(
-                            color: darkMode.colorScheme.inversePrimary,
-                            fontSize: 25,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: groupsList.length,
-                        itemBuilder: (context, index) {
-                          final group = groupsList[index];
-                          bool isSelected = selectedIndices.contains(index);
-                          return Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: Color(group.color),
-                              ),
-                              color: isSelected
-                                  ? darkMode.colorScheme.primary
-                                  : darkMode.colorScheme.secondary,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            margin: const EdgeInsets.only(top: 5, bottom: 5),
-                            child: ListTile(
-                              splashColor: Colors.transparent,
-                              onTap: () {
-                                setState(() {
-                                  if (isSelected) {
-                                    selectedIndices.remove(index);
-                                    idList.remove(group.groupID);
-                                  } else {
-                                    selectedIndices.add(index);
-                                    idList.add(group.groupID);
-                                  }
-                                });
-                              },
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 15,
-                              ),
-                              title: Text(
-                                group.text,
-                                style: TextStyle(
-                                  color: darkMode.colorScheme.inversePrimary,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              trailing: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white)
-                                  : null,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 10, bottom: 5, right: 10, left: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              "CANCEL",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) =>
-                              //         WorkoutSession(list: idList),
-                              //   ),
-                              // );
-                            },
-                            child: const Text(
-                              "PROCEED",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
+  // startWorkout() {
+  //   List<int> selectedIndices = [];
+  //   List idList = [];
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => Dialog(
+  //       shape: RoundedRectangleBorder(
+  //         side: BorderSide(
+  //           color: darkMode.colorScheme.secondary,
+  //           width: 7,
+  //         ),
+  //         borderRadius: BorderRadius.circular(20),
+  //       ),
+  //       backgroundColor: darkMode.colorScheme.surface,
+  //       child: StatefulBuilder(
+  //         builder: (context, setState) {
+  //           return SizedBox(
+  //             height: 500,
+  //             width: 400,
+  //             child: Container(
+  //               padding: const EdgeInsets.only(
+  //                   left: 20, right: 20, bottom: 10, top: 10),
+  //               child: Column(
+  //                 children: [
+  //                   Padding(
+  //                     padding: const EdgeInsets.only(bottom: 10, top: 5),
+  //                     child: Align(
+  //                       alignment: Alignment.centerLeft,
+  //                       child: Text(
+  //                         "Add to today's workout",
+  //                         style: TextStyle(
+  //                           color: darkMode.colorScheme.inversePrimary,
+  //                           fontSize: 25,
+  //                           fontWeight: FontWeight.w900,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   Expanded(
+  //                     child: ListView.builder(
+  //                       itemCount: groupsList.length,
+  //                       itemBuilder: (context, index) {
+  //                         final group = groupsList[index];
+  //                         bool isSelected = selectedIndices.contains(index);
+  //                         return Container(
+  //                           decoration: BoxDecoration(
+  //                             border: Border.all(
+  //                               color: Color(group.color),
+  //                             ),
+  //                             color: isSelected
+  //                                 ? darkMode.colorScheme.primary
+  //                                 : darkMode.colorScheme.secondary,
+  //                             borderRadius: BorderRadius.circular(20),
+  //                           ),
+  //                           margin: const EdgeInsets.only(top: 5, bottom: 5),
+  //                           child: ListTile(
+  //                             splashColor: Colors.transparent,
+  //                             onTap: () {
+  //                               setState(() {
+  //                                 if (isSelected) {
+  //                                   selectedIndices.remove(index);
+  //                                   idList.remove(group.groupID);
+  //                                 } else {
+  //                                   selectedIndices.add(index);
+  //                                   idList.add(group.groupID);
+  //                                 }
+  //                               });
+  //                             },
+  //                             contentPadding: const EdgeInsets.symmetric(
+  //                               horizontal: 15,
+  //                             ),
+  //                             title: Text(
+  //                               group.groupName,
+  //                               style: TextStyle(
+  //                                 color: darkMode.colorScheme.inversePrimary,
+  //                                 fontSize: 23,
+  //                                 fontWeight: FontWeight.bold,
+  //                               ),
+  //                             ),
+  //                             trailing: isSelected
+  //                                 ? const Icon(Icons.check, color: Colors.white)
+  //                                 : null,
+  //                           ),
+  //                         );
+  //                       },
+  //                     ),
+  //                   ),
+  //                   Padding(
+  //                     padding: const EdgeInsets.only(
+  //                         top: 10, bottom: 5, right: 10, left: 10),
+  //                     child: Row(
+  //                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                       children: [
+  //                         TextButton(
+  //                           onPressed: () {
+  //                             Navigator.pop(context);
+  //                           },
+  //                           child: const Text(
+  //                             "CANCEL",
+  //                             style:
+  //                                 TextStyle(color: Colors.white, fontSize: 16),
+  //                           ),
+  //                         ),
+  //                         TextButton(
+  //                           onPressed: () {
+  //                             Navigator.pop(context);
+  //                             // Navigator.push(
+  //                             //   context,
+  //                             //   MaterialPageRoute(
+  //                             //     builder: (context) =>
+  //                             //         WorkoutSession(list: idList),
+  //                             //   ),
+  //                             // );
+  //                           },
+  //                           child: const Text(
+  //                             "PROCEED",
+  //                             style:
+  //                                 TextStyle(color: Colors.white, fontSize: 16),
+  //                           ),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -465,7 +465,7 @@ class _HomePageState extends State<HomePage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ExercisePage(
-                                    groupName: group.text,
+                                    groupName: group.groupName,
                                     id: group.groupID,
                                     color: group.color,
                                   ),
@@ -481,7 +481,7 @@ class _HomePageState extends State<HomePage> {
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 10, horizontal: 20),
                           title: Text(
-                            group.text,
+                            group.groupName,
                             style: TextStyle(
                               color: darkMode.colorScheme.inversePrimary,
                               fontSize: 30,
