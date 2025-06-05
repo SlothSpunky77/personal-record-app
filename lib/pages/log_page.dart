@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:pr/theme/theme.dart';
 import 'package:pr/models/database.dart';
 
-class WorkoutLogPage extends StatefulWidget {
+class LogPage extends StatefulWidget {
   final String workoutName;
   final int workoutId;
-  const WorkoutLogPage(
+  const LogPage(
       {super.key, required this.workoutName, required this.workoutId});
 
   @override
-  State<WorkoutLogPage> createState() => _WorkoutLogPageState();
+  State<LogPage> createState() => _LogPageState();
 }
 
 class LogWithSets {
@@ -20,7 +20,7 @@ class LogWithSets {
   LogWithSets(this.log, this.sets);
 }
 
-class _WorkoutLogPageState extends State<WorkoutLogPage> {
+class _LogPageState extends State<LogPage> {
   List<Log> logs = [];
   List<LogWithSets> logWithSets = [];
   List<_SetInput> setInputs = [_SetInput()];
@@ -68,7 +68,7 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
             ),
           ),
           content: SizedBox(
-            width: 350,
+            width: 250,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -85,11 +85,14 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                       Expanded(
                         child: TextField(
                           controller: setInputs[index].weightController,
+                          style: TextStyle(
+                            color: darkMode.colorScheme.inversePrimary,
+                          ),
                           keyboardType: const TextInputType.numberWithOptions(
                               decimal: true),
                           decoration: InputDecoration(
-                            labelText: 'Weight',
-                            labelStyle: TextStyle(
+                            hintText: 'Weight',
+                            hintStyle: TextStyle(
                               color: darkMode.colorScheme.primary,
                             ),
                           ),
@@ -99,10 +102,13 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
                       Expanded(
                         child: TextField(
                           controller: setInputs[index].repsController,
+                          style: TextStyle(
+                            color: darkMode.colorScheme.inversePrimary,
+                          ),
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            labelText: 'Reps',
-                            labelStyle: TextStyle(
+                            hintText: 'Reps',
+                            hintStyle: TextStyle(
                               color: darkMode.colorScheme.primary,
                             ),
                           ),
@@ -180,16 +186,18 @@ class _WorkoutLogPageState extends State<WorkoutLogPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          widget.workoutName,
-          style: TextStyle(
-            color: darkMode.colorScheme.inversePrimary,
+          title: Text(
+            widget.workoutName,
+            style: TextStyle(
+              color: darkMode.colorScheme.inversePrimary,
+            ),
           ),
-        ),
-        backgroundColor: Colors.black,
-      ),
+          backgroundColor: Colors.black,
+          iconTheme: IconThemeData(
+            color: darkMode.colorScheme.inversePrimary,
+          )),
       body: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.only(top: 5, left: 20, right: 20),
         child: Column(
           children: [
             Container(

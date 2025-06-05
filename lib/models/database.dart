@@ -18,7 +18,7 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
 
   newGroup(String textInput, int colorInput) async {
-    final groupID = await into(muscleGroups).insert(MuscleGroupsCompanion(
+    await into(muscleGroups).insert(MuscleGroupsCompanion(
         groupName: Value(textInput), color: Value(colorInput)));
   }
 

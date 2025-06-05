@@ -5,7 +5,7 @@ import 'package:pr/pages/onboard.dart';
 import 'package:pr/pages/pr_page.dart';
 import 'package:pr/theme/theme.dart';
 import 'package:pr/pages/home_page.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,10 +25,9 @@ class _MyAppState extends State<MyApp> {
   bool _completed = false;
 
   void onboardCompleted() async {
-    //SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      //_completed = prefs.getBool('completed') ?? false;
-      _completed = false;
+      _completed = prefs.getBool('completed') ?? false;
     });
   }
 

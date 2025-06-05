@@ -275,7 +275,7 @@ class _ExercisePageState extends State<ExercisePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => WorkoutLogPage(
+                                  builder: (context) => LogPage(
                                     workoutName: workout.name,
                                     workoutId: workout.workoutID,
                                   ),
