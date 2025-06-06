@@ -403,16 +403,16 @@ class _HomePageState extends State<HomePage> {
                   },
                   icon: const Icon(Icons.delete),
                 ),
-              ],
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                tooltip: 'Info',
-                onPressed: () {
-                  setState(() {
-                    showInfoOverlay = true;
-                  });
-                },
-              ),
+              ] else
+                IconButton(
+                  icon: const Icon(Icons.info_outline),
+                  tooltip: 'Info',
+                  onPressed: () {
+                    setState(() {
+                      showInfoOverlay = true;
+                    });
+                  },
+                ),
             ],
           ),
           body: GestureDetector(
