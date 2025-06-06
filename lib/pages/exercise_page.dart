@@ -176,13 +176,13 @@ class _ExercisePageState extends State<ExercisePage> {
     );
   }
 
-  void deleteWorkout(int id) {
+  void deleteWorkout(int id, String name) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: darkMode.colorScheme.primary,
         title: Text(
-          'Delete workout?',
+          'Delete workout \'$name\'?',
           style: TextStyle(color: darkMode.colorScheme.inversePrimary),
         ),
         actions: [
@@ -222,78 +222,91 @@ class _ExercisePageState extends State<ExercisePage> {
                 ),
                 IconButton(
                   onPressed: () {
-                    deleteWorkout(
-                        workoutsList[selectedWorkoutIndex!].workoutID);
+                    deleteWorkout(workoutsList[selectedWorkoutIndex!].workoutID,
+                        workoutsList[selectedWorkoutIndex!].name);
                   },
                   icon: const Icon(Icons.delete),
                 ),
               ]
             : [],
       ),
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: const AssetImage("assets/images/personal_record.png"),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Color(widget.color).withOpacity(0.3),
-              BlendMode.srcATop,
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          if (selectedWorkoutIndex != null) {
+            setState(() {
+              selectedWorkoutIndex = null;
+            });
+          }
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: const AssetImage("assets/images/personal_record.png"),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Color(widget.color).withOpacity(0.3),
+                BlendMode.srcATop,
+              ),
             ),
           ),
-        ),
-        child: SizedBox.expand(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Column(
-                  children: List.generate(
-                    workoutsList.length,
-                    (index) {
-                      final workout = workoutsList[index];
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: darkMode.colorScheme.secondary,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(10),
+          child: SizedBox.expand(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Column(
+                    children: List.generate(
+                      workoutsList.length,
+                      (index) {
+                        final workout = workoutsList[index];
+                        final bool isSelected = selectedWorkoutIndex == index;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Color.lerp(darkMode.colorScheme.secondary,
+                                    Colors.grey, 0.18)
+                                : darkMode.colorScheme.secondary,
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(15)),
                           ),
-                        ),
-                        margin:
-                            const EdgeInsets.only(top: 10, left: 10, right: 10),
-                        child: ListTile(
-                          title: Text(
-                            workout.name,
-                            style: TextStyle(
-                              color: darkMode.colorScheme.inversePrimary,
+                          margin: const EdgeInsets.only(
+                              top: 10, left: 15, right: 15),
+                          child: ListTile(
+                            title: Text(
+                              workout.name,
+                              style: TextStyle(
+                                color: darkMode.colorScheme.inversePrimary,
+                              ),
                             ),
-                          ),
-                          onTap: () {
-                            if (selectedWorkoutIndex != null) {
-                              setState(() {
-                                selectedWorkoutIndex = null;
-                              });
-                            } else {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LogPage(
-                                    workoutName: workout.name,
-                                    workoutId: workout.workoutID,
+                            onTap: () {
+                              if (selectedWorkoutIndex != null) {
+                                setState(() {
+                                  selectedWorkoutIndex = null;
+                                });
+                              } else {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LogPage(
+                                      workoutName: workout.name,
+                                      workoutId: workout.workoutID,
+                                    ),
                                   ),
-                                ),
-                              );
-                            }
-                          },
-                          onLongPress: () {
-                            setState(() {
-                              selectedWorkoutIndex = index;
-                            });
-                          },
-                        ),
-                      );
-                    },
+                                );
+                              }
+                            },
+                            onLongPress: () {
+                              setState(() {
+                                selectedWorkoutIndex = index;
+                              });
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
