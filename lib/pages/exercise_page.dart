@@ -80,7 +80,7 @@ class _ExercisePageState extends State<ExercisePage> {
             SizedBox(height: 5),
 
             SizedBox(
-              width: 180,
+              width: 220,
               child: TextField(
                 style: TextStyle(
                   color: darkMode.colorScheme.inversePrimary,
@@ -189,7 +189,7 @@ class _ExercisePageState extends State<ExercisePage> {
           MaterialButton(
             onPressed: () async {
               Navigator.pop(context);
-              await db.deleteWorkoutItem(id);
+              await db.deleteWorkout(id);
               await workoutFetch();
               selectedWorkoutIndex = null;
             },

@@ -40,10 +40,25 @@ class AppDatabase extends _$AppDatabase {
   }
 
   deleteGroup(int id) async {
+    final groupWorkouts = await (select(workouts)
+          ..where((table) => table.groupID.equals(id)))
+        .get();
+    for (final workout in groupWorkouts) {
+      final workoutLogs = await (select(logs)
+            ..where((table) => table.workoutID.equals(workout.workoutID)))
+          .get();
+      for (final log in workoutLogs) {
+        await (delete(logSets)..where((table) => table.logID.equals(log.logID)))
+            .go();
+        await (delete(logs)..where((table) => table.logID.equals(log.logID)))
+            .go();
+      }
+      await (delete(workouts)
+            ..where((table) => table.workoutID.equals(workout.workoutID)))
+          .go();
+    }
     await (delete(muscleGroups)..where((table) => table.groupID.equals(id)))
         .go();
-    await (delete(workouts)..where((table) => table.groupID.equals(id))).go();
-    //delete everything else from other tables also
   }
 
   newWorkout(int groupID, String name) async {
@@ -68,7 +83,16 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  deleteWorkoutItem(int id) async {
+  deleteWorkout(int id) async {
+    final workoutLogs = await (select(logs)
+          ..where((table) => table.workoutID.equals(id)))
+        .get();
+    for (final log in workoutLogs) {
+      await (delete(logSets)..where((table) => table.logID.equals(log.logID)))
+          .go();
+      await (delete(logs)..where((table) => table.logID.equals(log.logID)))
+          .go();
+    }
     await (delete(workouts)..where((table) => table.workoutID.equals(id))).go();
   }
 
@@ -95,6 +119,19 @@ class AppDatabase extends _$AppDatabase {
       await into(logSets).insert(
         set.copyWith(logID: Value(logId)),
       );
+    }
+  }
+
+  Future<void> deleteLogWithSets(int logId) async {
+    await (delete(logSets)..where((table) => table.logID.equals(logId))).go();
+    await (delete(logs)..where((table) => table.logID.equals(logId))).go();
+  }
+
+  Future<void> updateLogWithSets(
+      int logId, List<LogSetsCompanion> updatedSets) async {
+    await (delete(logSets)..where((table) => table.logID.equals(logId))).go();
+    for (final set in updatedSets) {
+      await into(logSets).insert(set.copyWith(logID: Value(logId)));
     }
   }
 }
