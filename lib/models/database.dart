@@ -15,7 +15,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from == 1) {
+            await m.addColumn(logs, logs.note);
+          } else if (from == 2) {
+            await m.addColumn(logs, logs.note);
+            await customStatement('UPDATE logs SET note = notes');
+          }
+        },
+      );
 
   newGroup(String textInput, int colorInput) async {
     await into(muscleGroups).insert(MuscleGroupsCompanion(
@@ -107,12 +119,13 @@ class AppDatabase extends _$AppDatabase {
         .get();
   }
 
-  Future<void> addLogWithSets(
-      int workoutId, List<LogSetsCompanion> sets) async {
+  Future<void> addLogWithSets(int workoutId, List<LogSetsCompanion> sets,
+      {String? note}) async {
     final logId = await into(logs).insert(
       LogsCompanion(
         workoutID: Value(workoutId),
         dt: Value(DateTime.now()),
+        note: Value(note),
       ),
     );
     for (final set in sets) {
@@ -127,8 +140,13 @@ class AppDatabase extends _$AppDatabase {
     await (delete(logs)..where((table) => table.logID.equals(logId))).go();
   }
 
-  Future<void> updateLogWithSets(
-      int logId, List<LogSetsCompanion> updatedSets) async {
+  Future<void> updateLogWithSets(int logId, List<LogSetsCompanion> updatedSets,
+      {String? note}) async {
+    // Update the notes for the log
+    await (update(logs)..where((table) => table.logID.equals(logId))).write(
+      LogsCompanion(note: Value(note)),
+    );
+    // Replace sets
     await (delete(logSets)..where((table) => table.logID.equals(logId))).go();
     for (final set in updatedSets) {
       await into(logSets).insert(set.copyWith(logID: Value(logId)));

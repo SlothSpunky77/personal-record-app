@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 
-//the following is stitched together like as if its in a json format so you can modify it later to make it easier to access data
 class MuscleGroups extends Table {
   IntColumn get groupID => integer().autoIncrement()();
   TextColumn get groupName => text()();
@@ -17,6 +16,7 @@ class Logs extends Table {
   IntColumn get logID => integer().autoIncrement()();
   IntColumn get workoutID => integer().references(Workouts, #workoutID)();
   DateTimeColumn get dt => dateTime()();
+  TextColumn get note => text().nullable()();
 }
 
 class LogSets extends Table {

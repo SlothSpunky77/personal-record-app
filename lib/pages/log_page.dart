@@ -26,6 +26,7 @@ class _LogPageState extends State<LogPage> {
   List<_SetInput> setInputs = [_SetInput()];
   final db = AppDatabase();
   int? selectedLogIndex;
+  TextEditingController noteController = TextEditingController();
 
   @override
   void initState() {
@@ -50,13 +51,16 @@ class _LogPageState extends State<LogPage> {
               reps: Value(int.tryParse(input.repsController.text) ?? 0),
             ))
         .toList();
-    await db.addLogWithSets(widget.workoutId, sets);
+    await db.addLogWithSets(widget.workoutId, sets,
+        note: noteController.text.isNotEmpty ? noteController.text : null);
     setInputs = [_SetInput()];
+    noteController.clear();
     await fetchLogsandSets();
     Navigator.of(context).pop();
   }
 
   void createLogDialog() {
+    noteController.clear();
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -130,39 +134,63 @@ class _LogPageState extends State<LogPage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 10),
                 TextButton(
-                    onPressed: () {
-                      setStateDialog(() {
-                        setInputs.add(_SetInput());
-                      });
-                    },
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: darkMode.colorScheme.inversePrimary,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
+                  onPressed: () {
+                    setStateDialog(() {
+                      setInputs.add(_SetInput());
+                    });
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: darkMode.colorScheme.inversePrimary,
+                        width: 2,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text("Add set",
-                                style: TextStyle(
-                                  color: darkMode.colorScheme.inversePrimary,
-                                )),
-                            Icon(
-                              Icons.add,
-                              color: darkMode.colorScheme.inversePrimary,
-                              size: 22,
-                            ),
-                          ],
-                        ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Add set",
+                              style: TextStyle(
+                                color: darkMode.colorScheme.inversePrimary,
+                              )),
+                          Icon(
+                            Icons.add,
+                            color: darkMode.colorScheme.inversePrimary,
+                            size: 22,
+                          ),
+                        ],
                       ),
-                    )),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Notes, if any:",
+                    style: TextStyle(
+                      color: darkMode.colorScheme.inversePrimary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 5),
+                TextField(
+                  controller: noteController,
+                  maxLines: 2,
+                  style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Any thoughts?',
+                    hintStyle: TextStyle(color: darkMode.colorScheme.primary),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
               ],
             ),
           ),
@@ -193,6 +221,8 @@ class _LogPageState extends State<LogPage> {
       return input;
     }).toList();
     if (updateInputs.isEmpty) updateInputs = [_SetInput()];
+    TextEditingController updateNoteController =
+        TextEditingController(text: log.note ?? '');
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -262,7 +292,7 @@ class _LogPageState extends State<LogPage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 10),
                 TextButton(
                   onPressed: () {
                     setStateDialog(() {
@@ -294,6 +324,17 @@ class _LogPageState extends State<LogPage> {
                     ),
                   ),
                 ),
+                SizedBox(height: 5),
+                TextField(
+                  controller: updateNoteController,
+                  maxLines: 2,
+                  style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Notes, if any',
+                    hintStyle: TextStyle(color: darkMode.colorScheme.primary),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
               ],
             ),
           ),
@@ -309,7 +350,10 @@ class _LogPageState extends State<LogPage> {
                               int.tryParse(input.repsController.text) ?? 0),
                         ))
                     .toList();
-                await db.updateLogWithSets(log.logID, updatedSets);
+                await db.updateLogWithSets(log.logID, updatedSets,
+                    note: updateNoteController.text.isNotEmpty
+                        ? updateNoteController.text
+                        : null);
                 await fetchLogsandSets();
                 selectedLogIndex = null;
                 Navigator.of(context).pop();
@@ -388,22 +432,36 @@ class _LogPageState extends State<LogPage> {
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-                                      children: List.generate(sets.length,
-                                          (setIndex) {
-                                        final set = sets[setIndex];
-                                        return Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 2.0),
-                                          child: Text(
-                                            'Set ${setIndex + 1}: Weight: ${set.weight}, Reps: ${set.reps}',
+                                      children: [
+                                        ...List.generate(sets.length,
+                                            (setIndex) {
+                                          final set = sets[setIndex];
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 2.0),
+                                            child: Text(
+                                              'Set ${setIndex + 1}: Weight: ${set.weight}, Reps: ${set.reps}',
+                                              style: TextStyle(
+                                                color: darkMode
+                                                    .colorScheme.inversePrimary,
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                        if (log.note != null &&
+                                            log.note!.isNotEmpty) ...[
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Note: ${log.note}',
                                             style: TextStyle(
-                                              color: darkMode
-                                                  .colorScheme.inversePrimary,
-                                              fontSize: 18,
+                                              color: Colors.amber[200],
+                                              fontSize: 15,
+                                              fontStyle: FontStyle.italic,
                                             ),
                                           ),
-                                        );
-                                      }),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -556,6 +614,18 @@ class _LogPageState extends State<LogPage> {
                                       );
                                     }),
                                   ),
+                                  if (log.note != null &&
+                                      log.note!.isNotEmpty) ...[
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Note: ${log.note}',
+                                      style: TextStyle(
+                                        color: Colors.amber[200],
+                                        fontSize: 15,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                             ),

@@ -4,8 +4,6 @@ import 'package:pr/models/database.dart';
 import 'package:pr/pages/exercise_page.dart';
 import 'package:pr/theme/theme.dart';
 
-//TODO: add an info section wwith the floatingactionbutton
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -47,18 +45,25 @@ class _HomePageState extends State<HomePage> {
             width: 5,
           ),
         ),
-        title: Text(
-          'New Group',
-          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+        title: Row(
+          children: [
+            Text(
+              'New Group',
+              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+            ),
+            Spacer(),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.info_outline_rounded,
+                  color: darkMode.colorScheme.inversePrimary),
+            ),
+          ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
-                Icon(Icons.info_outline_rounded,
-                    color: darkMode.colorScheme.inversePrimary),
-                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     "This is where you can add a muscle group within which you can add workouts for that muscle group.\nThe color can also be changed. Tap on the white box to change the default color.",

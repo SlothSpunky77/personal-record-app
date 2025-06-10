@@ -470,8 +470,13 @@ class $LogsTable extends Logs with TableInfo<$LogsTable, Log> {
   late final GeneratedColumn<DateTime> dt = GeneratedColumn<DateTime>(
       'dt', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
-  List<GeneratedColumn> get $columns => [logID, workoutID, dt];
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+      'note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [logID, workoutID, dt, note];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -499,6 +504,10 @@ class $LogsTable extends Logs with TableInfo<$LogsTable, Log> {
     } else if (isInserting) {
       context.missing(_dtMeta);
     }
+    if (data.containsKey('note')) {
+      context.handle(
+          _noteMeta, note.isAcceptableOrUnknown(data['note']!, _noteMeta));
+    }
     return context;
   }
 
@@ -514,6 +523,8 @@ class $LogsTable extends Logs with TableInfo<$LogsTable, Log> {
           .read(DriftSqlType.int, data['${effectivePrefix}workout_i_d'])!,
       dt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}dt'])!,
+      note: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}note']),
     );
   }
 
@@ -527,13 +538,21 @@ class Log extends DataClass implements Insertable<Log> {
   final int logID;
   final int workoutID;
   final DateTime dt;
-  const Log({required this.logID, required this.workoutID, required this.dt});
+  final String? note;
+  const Log(
+      {required this.logID,
+      required this.workoutID,
+      required this.dt,
+      this.note});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['log_i_d'] = Variable<int>(logID);
     map['workout_i_d'] = Variable<int>(workoutID);
     map['dt'] = Variable<DateTime>(dt);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
     return map;
   }
 
@@ -542,6 +561,7 @@ class Log extends DataClass implements Insertable<Log> {
       logID: Value(logID),
       workoutID: Value(workoutID),
       dt: Value(dt),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
     );
   }
 
@@ -552,6 +572,7 @@ class Log extends DataClass implements Insertable<Log> {
       logID: serializer.fromJson<int>(json['logID']),
       workoutID: serializer.fromJson<int>(json['workoutID']),
       dt: serializer.fromJson<DateTime>(json['dt']),
+      note: serializer.fromJson<String?>(json['note']),
     );
   }
   @override
@@ -561,19 +582,27 @@ class Log extends DataClass implements Insertable<Log> {
       'logID': serializer.toJson<int>(logID),
       'workoutID': serializer.toJson<int>(workoutID),
       'dt': serializer.toJson<DateTime>(dt),
+      'note': serializer.toJson<String?>(note),
     };
   }
 
-  Log copyWith({int? logID, int? workoutID, DateTime? dt}) => Log(
+  Log copyWith(
+          {int? logID,
+          int? workoutID,
+          DateTime? dt,
+          Value<String?> note = const Value.absent()}) =>
+      Log(
         logID: logID ?? this.logID,
         workoutID: workoutID ?? this.workoutID,
         dt: dt ?? this.dt,
+        note: note.present ? note.value : this.note,
       );
   Log copyWithCompanion(LogsCompanion data) {
     return Log(
       logID: data.logID.present ? data.logID.value : this.logID,
       workoutID: data.workoutID.present ? data.workoutID.value : this.workoutID,
       dt: data.dt.present ? data.dt.value : this.dt,
+      note: data.note.present ? data.note.value : this.note,
     );
   }
 
@@ -582,55 +611,66 @@ class Log extends DataClass implements Insertable<Log> {
     return (StringBuffer('Log(')
           ..write('logID: $logID, ')
           ..write('workoutID: $workoutID, ')
-          ..write('dt: $dt')
+          ..write('dt: $dt, ')
+          ..write('note: $note')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(logID, workoutID, dt);
+  int get hashCode => Object.hash(logID, workoutID, dt, note);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Log &&
           other.logID == this.logID &&
           other.workoutID == this.workoutID &&
-          other.dt == this.dt);
+          other.dt == this.dt &&
+          other.note == this.note);
 }
 
 class LogsCompanion extends UpdateCompanion<Log> {
   final Value<int> logID;
   final Value<int> workoutID;
   final Value<DateTime> dt;
+  final Value<String?> note;
   const LogsCompanion({
     this.logID = const Value.absent(),
     this.workoutID = const Value.absent(),
     this.dt = const Value.absent(),
+    this.note = const Value.absent(),
   });
   LogsCompanion.insert({
     this.logID = const Value.absent(),
     required int workoutID,
     required DateTime dt,
+    this.note = const Value.absent(),
   })  : workoutID = Value(workoutID),
         dt = Value(dt);
   static Insertable<Log> custom({
     Expression<int>? logID,
     Expression<int>? workoutID,
     Expression<DateTime>? dt,
+    Expression<String>? note,
   }) {
     return RawValuesInsertable({
       if (logID != null) 'log_i_d': logID,
       if (workoutID != null) 'workout_i_d': workoutID,
       if (dt != null) 'dt': dt,
+      if (note != null) 'note': note,
     });
   }
 
   LogsCompanion copyWith(
-      {Value<int>? logID, Value<int>? workoutID, Value<DateTime>? dt}) {
+      {Value<int>? logID,
+      Value<int>? workoutID,
+      Value<DateTime>? dt,
+      Value<String?>? note}) {
     return LogsCompanion(
       logID: logID ?? this.logID,
       workoutID: workoutID ?? this.workoutID,
       dt: dt ?? this.dt,
+      note: note ?? this.note,
     );
   }
 
@@ -646,6 +686,9 @@ class LogsCompanion extends UpdateCompanion<Log> {
     if (dt.present) {
       map['dt'] = Variable<DateTime>(dt.value);
     }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
     return map;
   }
 
@@ -654,7 +697,8 @@ class LogsCompanion extends UpdateCompanion<Log> {
     return (StringBuffer('LogsCompanion(')
           ..write('logID: $logID, ')
           ..write('workoutID: $workoutID, ')
-          ..write('dt: $dt')
+          ..write('dt: $dt, ')
+          ..write('note: $note')
           ..write(')'))
         .toString();
   }
@@ -1459,11 +1503,13 @@ typedef $$LogsTableCreateCompanionBuilder = LogsCompanion Function({
   Value<int> logID,
   required int workoutID,
   required DateTime dt,
+  Value<String?> note,
 });
 typedef $$LogsTableUpdateCompanionBuilder = LogsCompanion Function({
   Value<int> logID,
   Value<int> workoutID,
   Value<DateTime> dt,
+  Value<String?> note,
 });
 
 final class $$LogsTableReferences
@@ -1513,6 +1559,9 @@ class $$LogsTableFilterComposer extends Composer<_$AppDatabase, $LogsTable> {
 
   ColumnFilters<DateTime> get dt => $composableBuilder(
       column: $table.dt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnFilters(column));
 
   $$WorkoutsTableFilterComposer get workoutID {
     final $$WorkoutsTableFilterComposer composer = $composerBuilder(
@@ -1570,6 +1619,9 @@ class $$LogsTableOrderingComposer extends Composer<_$AppDatabase, $LogsTable> {
   ColumnOrderings<DateTime> get dt => $composableBuilder(
       column: $table.dt, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnOrderings(column));
+
   $$WorkoutsTableOrderingComposer get workoutID {
     final $$WorkoutsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -1605,6 +1657,9 @@ class $$LogsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get dt =>
       $composableBuilder(column: $table.dt, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
 
   $$WorkoutsTableAnnotationComposer get workoutID {
     final $$WorkoutsTableAnnotationComposer composer = $composerBuilder(
@@ -1674,21 +1729,25 @@ class $$LogsTableTableManager extends RootTableManager<
             Value<int> logID = const Value.absent(),
             Value<int> workoutID = const Value.absent(),
             Value<DateTime> dt = const Value.absent(),
+            Value<String?> note = const Value.absent(),
           }) =>
               LogsCompanion(
             logID: logID,
             workoutID: workoutID,
             dt: dt,
+            note: note,
           ),
           createCompanionCallback: ({
             Value<int> logID = const Value.absent(),
             required int workoutID,
             required DateTime dt,
+            Value<String?> note = const Value.absent(),
           }) =>
               LogsCompanion.insert(
             logID: logID,
             workoutID: workoutID,
             dt: dt,
+            note: note,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>
