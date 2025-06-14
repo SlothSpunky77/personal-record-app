@@ -20,6 +20,11 @@ class LogWithSets {
   LogWithSets(this.log, this.sets);
 }
 
+class _SetInput {
+  final TextEditingController weightController = TextEditingController();
+  final TextEditingController repsController = TextEditingController();
+}
+
 class _LogPageState extends State<LogPage> {
   List<Log> logs = [];
   List<LogWithSets> logWithSets = [];
@@ -120,16 +125,42 @@ class _LogPageState extends State<LogPage> {
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon:
-                            const Icon(Icons.remove_circle, color: Colors.red),
-                        onPressed: setInputs.length > 1
-                            ? () {
-                                setStateDialog(() {
-                                  setInputs.removeAt(index);
-                                });
-                              }
-                            : null,
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle,
+                                color: Colors.red),
+                            onPressed: setInputs.length > 1
+                                ? () {
+                                    setStateDialog(() {
+                                      setInputs.removeAt(index);
+                                    });
+                                  }
+                                : null,
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                double weight = double.tryParse(setInputs[index]
+                                        .weightController
+                                        .text) ??
+                                    0;
+                                int reps = int.tryParse(
+                                        setInputs[index].repsController.text) ??
+                                    0;
+                                setStateDialog(
+                                  () {
+                                    setInputs.add(_SetInput()
+                                      ..weightController.text =
+                                          weight.toString()
+                                      ..repsController.text = reps.toString());
+                                  },
+                                );
+                              },
+                              icon: Icon(
+                                Icons.control_point_duplicate,
+                                color: darkMode.colorScheme.inversePrimary,
+                              )),
+                        ],
                       ),
                     ],
                   ),
@@ -639,9 +670,4 @@ class _LogPageState extends State<LogPage> {
       ),
     );
   }
-}
-
-class _SetInput {
-  final TextEditingController weightController = TextEditingController();
-  final TextEditingController repsController = TextEditingController();
 }
