@@ -245,7 +245,7 @@ class _ExercisePageState extends State<ExercisePage> {
               image: const AssetImage("assets/images/personal_record.png"),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
-                Color(widget.color).withOpacity(0.3),
+                Color(widget.color).withOpacity(0.25),
                 BlendMode.srcATop,
               ),
             ),

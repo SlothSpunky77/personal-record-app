@@ -170,6 +170,7 @@ class Page2 extends StatelessWidget {
           color: const Color.fromARGB(255, 14, 0, 34),
           child: Column(
             children: [
+              //top
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2,
                 child: Padding(
@@ -183,9 +184,10 @@ class Page2 extends StatelessWidget {
                   ),
                 ),
               ),
+              //bottom
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2,
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.only(left: 5, top: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,6 +235,46 @@ class Page2 extends StatelessWidget {
                           ),
                         ],
                       ),
+                      Spacer(),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child: SizedBox(
+                              width: 40,
+                              child: IconButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  icon: Icon(
+                                    Icons.chevron_left_rounded,
+                                    color: Color.fromARGB(255, 92, 92, 92),
+                                    size: 40,
+                                  )),
+                            ),
+                          ),
+                          Expanded(child: SizedBox()),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child: SizedBox(
+                              width: 40,
+                              child: IconButton(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const Page3()));
+                                  },
+                                  icon: Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: Color.fromARGB(255, 92, 92, 92),
+                                    size: 40,
+                                  )),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -278,7 +320,7 @@ class Page1 extends StatelessWidget {
               //bottom half
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2,
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.only(left: 5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,6 +352,48 @@ class Page1 extends StatelessWidget {
                                     Color.fromARGB(255, 79, 79, 79)),
                           ),
                         ],
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child: SizedBox(
+                              width: 40,
+                            ),
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                "swipe to the next screen",
+                                style: TextStyle(
+                                  color: Color.fromARGB(255, 79, 79, 79),
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            child: SizedBox(
+                              width: 40,
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => const Page2()));
+                                },
+                                icon: Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: Color.fromARGB(255, 79, 79, 79),
+                                  size: 40,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
                       ),
                     ],
                   ),

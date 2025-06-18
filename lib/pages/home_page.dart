@@ -419,122 +419,113 @@ class _HomePageState extends State<HomePage> {
                 ),
             ],
           ),
-          body: Stack(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  if (selectedTileIndex != null) {
-                    setState(() {
-                      selectedTileIndex = null;
-                    });
-                  }
-                },
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image:
-                          const AssetImage("assets/images/personal_record.png"),
-                      fit: BoxFit.cover,
-                      colorFilter: ColorFilter.mode(
-                        const Color.fromARGB(255, 28, 28, 28).withOpacity(0.5),
-                        BlendMode.srcATop,
-                      ),
-                    ),
-                  ),
-                  child: SizedBox.expand(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Column(
-                            children: List.generate(
-                              groupsList.length,
-                              (index) {
-                                final group = groupsList[index];
-                                final bool isSelected =
-                                    selectedTileIndex == index;
-                                final Color baseColor = Color(group.color);
-                                final Color tileColor = isSelected
-                                    ? Color.lerp(
-                                            baseColor,
-                                            const Color.fromARGB(
-                                                255, 44, 44, 44),
-                                            0.9) ??
-                                        baseColor
-                                    : darkMode.colorScheme.primary;
-                                final Color gradientColor = isSelected
-                                    ? Color.lerp(
-                                            baseColor, Colors.white, 0.2) ??
-                                        baseColor
-                                    : Color.lerp(darkMode.colorScheme.primary,
-                                            baseColor, 0.3) ??
-                                        darkMode.colorScheme.primary;
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(25),
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        tileColor,
-                                        gradientColor,
-                                      ],
-                                      stops: const [0.4, 1],
-                                    ),
-                                  ),
-                                  margin: const EdgeInsets.only(
-                                    left: 20,
-                                    right: 20,
-                                    bottom: 10,
-                                  ),
-                                  child: ListTile(
-                                    onTap: () {
-                                      if (selectedTileIndex != null) {
-                                        setState(() {
-                                          selectedTileIndex = null;
-                                        });
-                                      } else {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ExercisePage(
-                                              groupName: group.groupName,
-                                              id: group.groupID,
-                                              color: group.color,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    onLongPress: () {
-                                      setState(() {
-                                        selectedTileIndex = index;
-                                      });
-                                    },
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 20),
-                                    title: Text(
-                                      group.groupName,
-                                      style: TextStyle(
-                                        color:
-                                            darkMode.colorScheme.inversePrimary,
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+          body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              if (selectedTileIndex != null) {
+                setState(() {
+                  selectedTileIndex = null;
+                });
+              }
+            },
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: const AssetImage("assets/images/personal_record.png"),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    const Color.fromARGB(255, 28, 28, 28).withOpacity(0.5),
+                    BlendMode.srcATop,
                   ),
                 ),
               ),
-            ],
+              child: SizedBox.expand(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Column(
+                        children: List.generate(
+                          groupsList.length,
+                          (index) {
+                            final group = groupsList[index];
+                            final bool isSelected = selectedTileIndex == index;
+                            final Color baseColor = Color(group.color);
+                            final Color tileColor = isSelected
+                                ? Color.lerp(
+                                        baseColor,
+                                        const Color.fromARGB(255, 44, 44, 44),
+                                        0.9) ??
+                                    baseColor
+                                : darkMode.colorScheme.primary;
+                            final Color gradientColor = isSelected
+                                ? Color.lerp(baseColor, Colors.white, 0.2) ??
+                                    baseColor
+                                : Color.lerp(darkMode.colorScheme.primary,
+                                        baseColor, 0.3) ??
+                                    darkMode.colorScheme.primary;
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(25),
+                                gradient: LinearGradient(
+                                  colors: [
+                                    tileColor,
+                                    gradientColor,
+                                  ],
+                                  stops: const [0.4, 1],
+                                ),
+                              ),
+                              margin: const EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                bottom: 10,
+                              ),
+                              child: ListTile(
+                                onTap: () {
+                                  if (selectedTileIndex != null) {
+                                    setState(() {
+                                      selectedTileIndex = null;
+                                    });
+                                  } else {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ExercisePage(
+                                          groupName: group.groupName,
+                                          id: group.groupID,
+                                          color: group.color,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                onLongPress: () {
+                                  setState(() {
+                                    selectedTileIndex = index;
+                                  });
+                                },
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10, horizontal: 20),
+                                title: Text(
+                                  group.groupName,
+                                  style: TextStyle(
+                                    color: darkMode.colorScheme.inversePrimary,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
           floatingActionButton: Column(
             mainAxisAlignment: MainAxisAlignment.end,

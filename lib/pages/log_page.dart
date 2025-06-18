@@ -79,7 +79,7 @@ class _LogPageState extends State<LogPage> {
             ),
           ),
           content: SizedBox(
-            width: 250,
+            width: 300,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -139,27 +139,26 @@ class _LogPageState extends State<LogPage> {
                                 : null,
                           ),
                           IconButton(
-                              onPressed: () {
-                                double weight = double.tryParse(setInputs[index]
-                                        .weightController
-                                        .text) ??
-                                    0;
-                                int reps = int.tryParse(
-                                        setInputs[index].repsController.text) ??
-                                    0;
-                                setStateDialog(
-                                  () {
-                                    setInputs.add(_SetInput()
-                                      ..weightController.text =
-                                          weight.toString()
-                                      ..repsController.text = reps.toString());
-                                  },
-                                );
-                              },
-                              icon: Icon(
-                                Icons.control_point_duplicate,
-                                color: darkMode.colorScheme.inversePrimary,
-                              )),
+                            onPressed: () {
+                              double weight = double.tryParse(
+                                      setInputs[index].weightController.text) ??
+                                  0;
+                              int reps = int.tryParse(
+                                      setInputs[index].repsController.text) ??
+                                  0;
+                              setStateDialog(
+                                () {
+                                  setInputs.add(_SetInput()
+                                    ..weightController.text = weight.toString()
+                                    ..repsController.text = reps.toString());
+                                },
+                              );
+                            },
+                            icon: Icon(
+                              Icons.control_point_duplicate,
+                              color: darkMode.colorScheme.inversePrimary,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -263,7 +262,7 @@ class _LogPageState extends State<LogPage> {
               style: TextStyle(
                   fontSize: 22, color: darkMode.colorScheme.inversePrimary)),
           content: SizedBox(
-            width: 250,
+            width: 300,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -320,6 +319,27 @@ class _LogPageState extends State<LogPage> {
                               }
                             : null,
                       ),
+                      IconButton(
+                        onPressed: () {
+                          double weight = double.tryParse(
+                                  setInputs[index].weightController.text) ??
+                              0;
+                          int reps = int.tryParse(
+                                  setInputs[index].repsController.text) ??
+                              0;
+                          setStateDialog(
+                            () {
+                              setInputs.add(_SetInput()
+                                ..weightController.text = weight.toString()
+                                ..repsController.text = reps.toString());
+                            },
+                          );
+                        },
+                        icon: Icon(
+                          Icons.control_point_duplicate,
+                          color: darkMode.colorScheme.inversePrimary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -356,6 +376,13 @@ class _LogPageState extends State<LogPage> {
                   ),
                 ),
                 SizedBox(height: 5),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("Your notes:",
+                      style: TextStyle(
+                          color: darkMode.colorScheme.inversePrimary,
+                          fontSize: 16)),
+                ),
                 TextField(
                   controller: updateNoteController,
                   maxLines: 2,
@@ -400,6 +427,114 @@ class _LogPageState extends State<LogPage> {
     );
   }
 
+  void deleteLogDialog(int logIndex) {
+    final log = logWithSets[logIndex].log;
+    final sets = logWithSets[logIndex].sets;
+    final dt = log.dt;
+    final dateStr =
+        '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: darkMode.colorScheme.primary,
+        title: Text('Delete this log?',
+            style: TextStyle(color: darkMode.colorScheme.inversePrimary)),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                color: Colors.grey[900],
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text('$dateStr $timeStr',
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 14)),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ...List.generate(sets.length, (setIndex) {
+                            final set = sets[setIndex];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 2.0),
+                              child: Text(
+                                'Set ${setIndex + 1}: Weight: ${set.weight}, Reps: ${set.reps}',
+                                style: TextStyle(
+                                  color: darkMode.colorScheme.inversePrimary,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            );
+                          }),
+                          if (log.note != null && log.note!.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                              ),
+                              child: Text(
+                                'Note: ${log.note}',
+                                style: TextStyle(
+                                  color: Colors.amber[200],
+                                  fontSize: 15,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text('Are you sure you want to delete this log?',
+                  style: TextStyle(color: darkMode.colorScheme.inversePrimary)),
+            ],
+          ),
+        ),
+        actions: [
+          Row(
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('CANCEL',
+                    style:
+                        TextStyle(color: darkMode.colorScheme.inversePrimary)),
+              ),
+              Spacer(),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await db.deleteLogWithSets(log.logID);
+                  selectedLogIndex = null;
+
+                  await fetchLogsandSets();
+                },
+                child: Text('DELETE', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -424,66 +559,163 @@ class _LogPageState extends State<LogPage> {
                   icon: const Icon(Icons.edit),
                 ),
                 IconButton(
-                  onPressed: () async {
-                    final log = logWithSets[selectedLogIndex!].log;
-                    final sets = logWithSets[selectedLogIndex!].sets;
-                    final dt = log.dt;
-                    final dateStr =
-                        '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
-                    final timeStr =
-                        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-                    await showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: darkMode.colorScheme.primary,
-                        title: Text('Delete this log?',
-                            style: TextStyle(
-                                color: darkMode.colorScheme.inversePrimary)),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Card(
-                              color: Colors.grey[900],
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 6, horizontal: 2),
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text('$dateStr $timeStr',
+                  onPressed: () {
+                    deleteLogDialog(selectedLogIndex!);
+                  },
+                  icon: const Icon(Icons.delete),
+                ),
+              ]
+            : [],
+      ),
+      body: GestureDetector(
+        onTap: () {
+          if (selectedLogIndex != null) {
+            setState(() {
+              selectedLogIndex = null;
+            });
+          }
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: const AssetImage("assets/images/personal_record.png"),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                const Color.fromARGB(255, 0, 0, 0).withOpacity(0.8),
+                BlendMode.srcATop,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 5, left: 20, right: 20),
+            child: Column(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      width: 2,
+                      color: darkMode.colorScheme.inversePrimary,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton(
+                    onPressed: createLogDialog,
+                    child: Row(
+                      children: [
+                        Text(
+                          "Add fresh log",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: darkMode.colorScheme.inversePrimary,
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.add,
+                          color: darkMode.colorScheme.inversePrimary,
+                          size: 28,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: logWithSets.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No logs yet.',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: logWithSets.length,
+                          itemBuilder: (context, logIndex) {
+                            final displayIndex =
+                                logWithSets.length - 1 - logIndex;
+                            final logWithSet = logWithSets[displayIndex];
+                            final log = logWithSet.log;
+                            final sets = logWithSet.sets;
+                            final dt = log.dt;
+                            final dateStr =
+                                '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+                            final timeStr =
+                                '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                            final isSelected = selectedLogIndex == displayIndex;
+                            return GestureDetector(
+                              onLongPress: () {
+                                setState(() {
+                                  selectedLogIndex = displayIndex;
+                                });
+                              },
+                              onTap: () {
+                                setState(() {
+                                  selectedLogIndex = null;
+                                });
+                              },
+                              child: Card(
+                                color: isSelected
+                                    ? Colors.grey[800]
+                                    : Colors.grey[900],
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 6, horizontal: 2),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            '$dateStr $timeStr',
                                             style: const TextStyle(
                                                 color: Colors.grey,
-                                                fontSize: 14)),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ...List.generate(sets.length,
+                                                fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: List.generate(sets.length,
                                             (setIndex) {
                                           final set = sets[setIndex];
                                           return Padding(
                                             padding: const EdgeInsets.symmetric(
                                                 vertical: 2.0),
-                                            child: Text(
-                                              'Set ${setIndex + 1}: Weight: ${set.weight}, Reps: ${set.reps}',
-                                              style: TextStyle(
-                                                color: darkMode
-                                                    .colorScheme.inversePrimary,
-                                                fontSize: 18,
-                                              ),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  'Set ${setIndex + 1}:',
+                                                  style: TextStyle(
+                                                      color: darkMode
+                                                          .colorScheme
+                                                          .inversePrimary,
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                ),
+                                                Text(
+                                                  ' Weight: ${set.weight}, Reps: ${set.reps}',
+                                                  style: TextStyle(
+                                                    color: darkMode.colorScheme
+                                                        .inversePrimary,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           );
                                         }),
-                                        if (log.note != null &&
-                                            log.note!.isNotEmpty) ...[
-                                          const SizedBox(height: 8),
-                                          Text(
+                                      ),
+                                      if (log.note != null &&
+                                          log.note!.isNotEmpty) ...[
+                                        const SizedBox(height: 5),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 10, right: 10),
+                                          child: Text(
                                             'Note: ${log.note}',
                                             style: TextStyle(
                                               color: Colors.amber[200],
@@ -491,181 +723,19 @@ class _LogPageState extends State<LogPage> {
                                               fontStyle: FontStyle.italic,
                                             ),
                                           ),
-                                        ],
+                                        ),
                                       ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text('Are you sure you want to delete this log?',
-                                style: TextStyle(
-                                    color:
-                                        darkMode.colorScheme.inversePrimary)),
-                          ],
-                        ),
-                        actions: [
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text('CANCEL',
-                                    style: TextStyle(
-                                        color: darkMode
-                                            .colorScheme.inversePrimary)),
-                              ),
-                              Spacer(),
-                              TextButton(
-                                onPressed: () async {
-                                  Navigator.pop(context);
-                                  await db.deleteLogWithSets(log.logID);
-                                  await fetchLogsandSets();
-                                  setState(() {
-                                    selectedLogIndex = null;
-                                  });
-                                },
-                                child: Text('DELETE',
-                                    style: TextStyle(color: Colors.red)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.delete),
-                ),
-              ]
-            : [],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(top: 5, left: 20, right: 20),
-        child: Column(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  width: 2,
-                  color: darkMode.colorScheme.inversePrimary,
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TextButton(
-                onPressed: createLogDialog,
-                child: Row(
-                  children: [
-                    Text(
-                      "Add fresh log",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: darkMode.colorScheme.inversePrimary,
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.add,
-                      color: darkMode.colorScheme.inversePrimary,
-                      size: 28,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Expanded(
-              child: logWithSets.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No logs yet.',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: logWithSets.length,
-                      itemBuilder: (context, logIndex) {
-                        final displayIndex = logWithSets.length - 1 - logIndex;
-                        final logWithSet = logWithSets[displayIndex];
-                        final log = logWithSet.log;
-                        final sets = logWithSet.sets;
-                        final dt = log.dt;
-                        final dateStr =
-                            '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
-                        final timeStr =
-                            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-                        final isSelected = selectedLogIndex == displayIndex;
-                        return GestureDetector(
-                          onLongPress: () {
-                            setState(() {
-                              selectedLogIndex = displayIndex;
-                            });
-                          },
-                          onTap: () {
-                            setState(() {
-                              selectedLogIndex = null;
-                            });
-                          },
-                          child: Card(
-                            color: isSelected
-                                ? Colors.grey[800]
-                                : Colors.grey[900],
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 6, horizontal: 2),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '$dateStr $timeStr',
-                                        style: const TextStyle(
-                                            color: Colors.grey, fontSize: 14),
-                                      ),
                                     ],
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children:
-                                        List.generate(sets.length, (setIndex) {
-                                      final set = sets[setIndex];
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 2.0),
-                                        child: Text(
-                                          'Set ${setIndex + 1}: Weight: ${set.weight}, Reps: ${set.reps}',
-                                          style: TextStyle(
-                                            color: darkMode
-                                                .colorScheme.inversePrimary,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                  if (log.note != null &&
-                                      log.note!.isNotEmpty) ...[
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      'Note: ${log.note}',
-                                      style: TextStyle(
-                                        color: Colors.amber[200],
-                                        fontSize: 15,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                            );
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
