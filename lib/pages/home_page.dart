@@ -21,20 +21,16 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey infoIconKey = GlobalKey();
   OverlayEntry? infoOverlayEntry;
 
-  // Add for the FAB onboarding overlay
   final GlobalKey fabKey = GlobalKey();
   OverlayEntry? fabOnboardingOverlayEntry;
-  bool showedInitialOverlay = false;
 
   @override
   void initState() {
     super.initState();
     groupFetch().then((_) {
-      if (groupsList.isEmpty && !showedInitialOverlay) {
-        // Use Future.delayed to ensure the UI is fully built before showing overlay
+      if (groupsList.isEmpty) {
         Future.delayed(const Duration(milliseconds: 800), () {
           showFabOnboardingOverlay();
-          showedInitialOverlay = true;
         });
       }
     });
@@ -135,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                             content: IntrinsicHeight(
                               child: Padding(
-                                //have a Column with 'OK' button in the bottom
+                                //TODO: have a Column with 'OK' button in the bottom
                                 padding: const EdgeInsets.only(top: 10),
                                 child: Theme(
                                   data: ThemeData(
@@ -401,8 +397,6 @@ class _HomePageState extends State<HomePage> {
     final RenderBox renderBox =
         infoIconKey.currentContext!.findRenderObject() as RenderBox;
     final Size size = renderBox.size;
-
-    // Get the position in the overlay
     final Offset position = renderBox.localToGlobal(Offset.zero);
 
     infoOverlayEntry = OverlayEntry(
@@ -416,7 +410,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          // Popup positioned under the info button
           Positioned(
             top: position.dy + size.height + 20,
             right: 10,
@@ -476,11 +469,9 @@ class _HomePageState extends State<HomePage> {
       ),
     );
 
-    // Add to overlay
     Overlay.of(context).insert(infoOverlayEntry!);
   }
 
-  // Hide the info overlay
   void hideInfoOverlay() {
     infoOverlayEntry?.remove();
     infoOverlayEntry = null;
@@ -489,21 +480,12 @@ class _HomePageState extends State<HomePage> {
   void showFabOnboardingOverlay() {
     hideFabOnboardingOverlay();
 
-    // Make sure we have a valid FAB to reference
-    if (fabKey.currentContext == null) {
-      // If FAB is not ready yet, try again after a short delay
-      Future.delayed(
-          const Duration(milliseconds: 100), showFabOnboardingOverlay);
-      return;
-    }
-
     final RenderBox renderBox =
         fabKey.currentContext!.findRenderObject() as RenderBox;
 
     final Size size = renderBox.size;
     final Offset position = renderBox.localToGlobal(Offset.zero);
 
-    // Center of the FAB for the hole
     final Offset fabCenter = Offset(
       position.dx + (size.width / 2),
       position.dy + (size.height / 2),
@@ -605,11 +587,9 @@ class _HomePageState extends State<HomePage> {
       ),
     );
 
-    // Add to overlay
     Overlay.of(context).insert(fabOnboardingOverlayEntry!);
   }
 
-  // Hide the FAB onboarding overlay
   void hideFabOnboardingOverlay() {
     fabOnboardingOverlayEntry?.remove();
     fabOnboardingOverlayEntry = null;
