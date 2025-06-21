@@ -17,12 +17,34 @@ class _HomePageState extends State<HomePage> {
   int currentPageIndex = 0;
   List<MuscleGroup> groupsList = [];
   final db = AppDatabase();
-  bool showTileInfo = false;
+
+  final GlobalKey infoIconKey = GlobalKey();
+  OverlayEntry? infoOverlayEntry;
+
+  // Add for the FAB onboarding overlay
+  final GlobalKey fabKey = GlobalKey();
+  OverlayEntry? fabOnboardingOverlayEntry;
+  bool showedInitialOverlay = false;
 
   @override
   void initState() {
     super.initState();
-    groupFetch();
+    groupFetch().then((_) {
+      if (groupsList.isEmpty && !showedInitialOverlay) {
+        // Use Future.delayed to ensure the UI is fully built before showing overlay
+        Future.delayed(const Duration(milliseconds: 800), () {
+          showFabOnboardingOverlay();
+          showedInitialOverlay = true;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    hideInfoOverlay();
+    hideFabOnboardingOverlay();
+    super.dispose();
   }
 
   Future<void> groupFetch() async {
@@ -373,6 +395,226 @@ class _HomePageState extends State<HomePage> {
   //   );
   // }
 
+  void showInfoOverlay() {
+    hideInfoOverlay();
+
+    final RenderBox renderBox =
+        infoIconKey.currentContext!.findRenderObject() as RenderBox;
+    final Size size = renderBox.size;
+
+    // Get the position in the overlay
+    final Offset position = renderBox.localToGlobal(Offset.zero);
+
+    infoOverlayEntry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: hideInfoOverlay,
+              child: Container(
+                color: Colors.black.withOpacity(0.6),
+              ),
+            ),
+          ),
+          // Popup positioned under the info button
+          Positioned(
+            top: position.dy + size.height + 20,
+            right: 10,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(15),
+              child: Container(
+                width: 300,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: darkMode.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: darkMode.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Info",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: darkMode.colorScheme.inversePrimary,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Long press an item to select it.\n\nWhen selected, you can edit or delete the item using the icons that will appear in the top right.",
+                      style: TextStyle(
+                        color: darkMode.colorScheme.inversePrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "Tap anywhere to close",
+                        style: TextStyle(
+                          color: darkMode.colorScheme.inversePrimary
+                              .withOpacity(0.7),
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // Add to overlay
+    Overlay.of(context).insert(infoOverlayEntry!);
+  }
+
+  // Hide the info overlay
+  void hideInfoOverlay() {
+    infoOverlayEntry?.remove();
+    infoOverlayEntry = null;
+  }
+
+  void showFabOnboardingOverlay() {
+    hideFabOnboardingOverlay();
+
+    // Make sure we have a valid FAB to reference
+    if (fabKey.currentContext == null) {
+      // If FAB is not ready yet, try again after a short delay
+      Future.delayed(
+          const Duration(milliseconds: 100), showFabOnboardingOverlay);
+      return;
+    }
+
+    final RenderBox renderBox =
+        fabKey.currentContext!.findRenderObject() as RenderBox;
+
+    final Size size = renderBox.size;
+    final Offset position = renderBox.localToGlobal(Offset.zero);
+
+    // Center of the FAB for the hole
+    final Offset fabCenter = Offset(
+      position.dx + (size.width / 2),
+      position.dy + (size.height / 2),
+    );
+
+    fabOnboardingOverlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        type: MaterialType.transparency,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                painter: HolePainter(
+                  holeOffset: fabCenter,
+                  holeSize: Size(size.width + 20, size.height + 20),
+                  opacity: 0.8,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: position.dx - 10,
+                    top: position.dy - 10,
+                    width: size.width + 20,
+                    height: size.height + 20,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        hideFabOnboardingOverlay();
+                        createGroup();
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: position.dx - 310,
+              top: position.dy - 50,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(15),
+                child: Container(
+                  width: 300,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: darkMode.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: darkMode.colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.add_circle,
+                            color: darkMode.colorScheme.inversePrimary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Create a new group",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: darkMode.colorScheme.inversePrimary,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Start by creating a new muscle group by tapping on the plus button.",
+                        style: TextStyle(
+                          color: darkMode.colorScheme.inversePrimary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Add to overlay
+    Overlay.of(context).insert(fabOnboardingOverlayEntry!);
+  }
+
+  // Hide the FAB onboarding overlay
+  void hideFabOnboardingOverlay() {
+    fabOnboardingOverlayEntry?.remove();
+    fabOnboardingOverlayEntry = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -410,12 +652,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ] else
                 IconButton(
+                  key: infoIconKey,
                   icon: const Icon(Icons.info_outline),
-                  onPressed: () {
-                    setState(() {
-                      showTileInfo = true;
-                    });
-                  },
+                  onPressed: showInfoOverlay,
                 ),
             ],
           ),
@@ -536,8 +775,12 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     FloatingActionButton(
+                      key: fabKey,
                       backgroundColor: darkMode.colorScheme.primary,
-                      onPressed: createGroup,
+                      onPressed: () {
+                        hideFabOnboardingOverlay();
+                        createGroup();
+                      },
                       child: Icon(
                         Icons.add,
                         color: darkMode.colorScheme.inversePrimary,
@@ -549,61 +792,63 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        if (showTileInfo)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  showTileInfo = false;
-                });
-              },
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    margin: const EdgeInsets.symmetric(horizontal: 30),
-                    decoration: BoxDecoration(
-                      color: darkMode.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: darkMode.colorScheme.primary,
-                        width: 3,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.info_outline,
-                            size: 40,
-                            color: darkMode.colorScheme.inversePrimary),
-                        const SizedBox(height: 16),
-                        Text(
-                          "Long press an item to select it.\n\nWhen selected, you can edit or delete the item using the icons in the top right.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: darkMode.colorScheme.inversePrimary,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          "Tap anywhere to dismiss.",
-                          style: TextStyle(
-                            color: darkMode.colorScheme.inversePrimary,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
       ],
     );
   }
 }
 
 //add color selsction during the creation of the group. Give the group tile the tint. Clicking on the group gives its exercise_page's background image the same tint.
+
+// Custom painter to create a spotlight effect with a hole for the FAB
+class HolePainter extends CustomPainter {
+  final Offset holeOffset;
+  final Size holeSize;
+  final double opacity;
+
+  HolePainter({
+    required this.holeOffset,
+    required this.holeSize,
+    this.opacity = 0.8,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Create a path for the entire screen
+    final Path backgroundPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // Create a path for the hole
+    final Path holePath = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+            center: holeOffset,
+            width: holeSize.width,
+            height: holeSize.height,
+          ),
+          const Radius.circular(40),
+        ),
+      );
+
+    // Create a combined path (background minus hole)
+    final Path finalPath = Path.combine(
+      PathOperation.difference,
+      backgroundPath,
+      holePath,
+    );
+
+    // Fill with semi-transparent black
+    canvas.drawPath(
+      finalPath,
+      Paint()..color = Colors.black.withOpacity(opacity),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return oldDelegate is HolePainter &&
+        (oldDelegate.holeOffset != holeOffset ||
+            oldDelegate.holeSize != holeSize ||
+            oldDelegate.opacity != opacity);
+  }
+}

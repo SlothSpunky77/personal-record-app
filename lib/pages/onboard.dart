@@ -188,61 +188,69 @@ class Page2 extends StatelessWidget {
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2,
                 child: Padding(
-                  padding: EdgeInsets.only(left: 5, top: 20),
+                  padding: EdgeInsets.only(top: 20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Track ',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 45,
-                              fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Track ',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 45,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'PRs.',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 45,
-                              fontWeight: FontWeight.bold,
-                              backgroundColor: Color.fromARGB(255, 92, 92, 92),
+                            Text(
+                              'PRs.',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 45,
+                                fontWeight: FontWeight.bold,
+                                backgroundColor:
+                                    Color.fromARGB(255, 92, 92, 92),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      Row(
-                        children: [
-                          Text(
-                            'Maintain ',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 45,
-                              fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Maintain ',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 45,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'logs.',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 45,
-                              fontWeight: FontWeight.bold,
-                              backgroundColor:
-                                  Color.fromARGB(255, 129, 129, 129),
+                            Text(
+                              'logs.',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 45,
+                                fontWeight: FontWeight.bold,
+                                backgroundColor:
+                                    Color.fromARGB(255, 129, 129, 129),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       Spacer(),
                       Row(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            padding: const EdgeInsets.only(left: 20),
                             child: SizedBox(
                               width: 40,
                               child: IconButton(
+                                  padding: EdgeInsets.zero,
                                   onPressed: () {
                                     Navigator.pop(context);
                                   },
@@ -255,10 +263,11 @@ class Page2 extends StatelessWidget {
                           ),
                           Expanded(child: SizedBox()),
                           Padding(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
+                            padding: const EdgeInsets.only(right: 20),
                             child: SizedBox(
                               width: 40,
                               child: IconButton(
+                                  padding: EdgeInsets.zero,
                                   onPressed: () {
                                     Navigator.of(context).push(
                                         MaterialPageRoute(
@@ -320,12 +329,12 @@ class Page1 extends StatelessWidget {
               //bottom half
               SizedBox(
                 height: MediaQuery.of(context).size.height / 2,
-                child: Padding(
-                  padding: EdgeInsets.only(left: 5),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Text(
                         'Welcome',
                         style: TextStyle(
                           color: Color.fromARGB(255, 255, 255, 255),
@@ -333,7 +342,10 @@ class Page1 extends StatelessWidget {
                           fontSize: 70,
                         ),
                       ),
-                      Row(
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Row(
                         children: [
                           Text(
                             'to ',
@@ -353,50 +365,51 @@ class Page1 extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            child: SizedBox(
-                              width: 40,
-                            ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20),
+                          child: SizedBox(
+                            width: 40,
                           ),
-                          Expanded(
-                            child: Center(
-                              child: Text(
-                                "swipe to the next screen",
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 79, 79, 79),
-                                  fontSize: 20,
-                                ),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              "swipe to the next screen",
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 79, 79, 79),
+                                fontSize: 20,
                               ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            child: SizedBox(
-                              width: 40,
-                              child: IconButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (context) => const Page2()));
-                                },
-                                icon: Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: Color.fromARGB(255, 79, 79, 79),
-                                  size: 40,
-                                ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: SizedBox(
+                            width: 40,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => const Page2()));
+                              },
+                              icon: Icon(
+                                Icons.chevron_right_rounded,
+                                color: Color.fromARGB(255, 79, 79, 79),
+                                size: 40,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                  ],
                 ),
               ),
             ],
