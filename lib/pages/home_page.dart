@@ -777,8 +777,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-//add color selsction during the creation of the group. Give the group tile the tint. Clicking on the group gives its exercise_page's background image the same tint.
-
 // Custom painter to create a spotlight effect with a hole for the FAB
 class HolePainter extends CustomPainter {
   final Offset holeOffset;

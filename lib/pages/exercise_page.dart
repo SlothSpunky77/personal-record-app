@@ -250,65 +250,113 @@ class _ExercisePageState extends State<ExercisePage> {
               ),
             ),
           ),
-          child: SizedBox.expand(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Column(
-                    children: List.generate(
-                      workoutsList.length,
-                      (index) {
-                        final workout = workoutsList[index];
-                        final bool isSelected = selectedWorkoutIndex == index;
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Color.lerp(darkMode.colorScheme.secondary,
-                                    Colors.grey, 0.18)
-                                : darkMode.colorScheme.secondary,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(15)),
+          child: workoutsList.isEmpty
+              ? Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(30.0),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      border: Border.all(
+                        width: 2,
+                        color: darkMode.colorScheme.inversePrimary,
+                      ),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.fitness_center,
+                          size: 70,
+                          color: darkMode.colorScheme.inversePrimary
+                              .withOpacity(0.8),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          "No workouts added yet",
+                          style: TextStyle(
+                            color: darkMode.colorScheme.inversePrimary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
                           ),
-                          margin: const EdgeInsets.only(
-                              top: 10, left: 15, right: 15),
-                          child: ListTile(
-                            title: Text(
-                              workout.name,
-                              style: TextStyle(
-                                color: darkMode.colorScheme.inversePrimary,
-                              ),
-                            ),
-                            onTap: () {
-                              if (selectedWorkoutIndex != null) {
-                                setState(() {
-                                  selectedWorkoutIndex = null;
-                                });
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LogPage(
-                                      workoutName: workout.name,
-                                      workoutId: workout.workoutID,
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            onLongPress: () {
-                              setState(() {
-                                selectedWorkoutIndex = index;
-                              });
-                            },
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          "Tap the + button below to add your first workout",
+                          style: TextStyle(
+                            color: darkMode.colorScheme.inversePrimary,
+                            fontSize: 16,
                           ),
-                        );
-                      },
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
+                )
+              : SizedBox.expand(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Column(
+                          children: List.generate(
+                            workoutsList.length,
+                            (index) {
+                              final workout = workoutsList[index];
+                              final bool isSelected =
+                                  selectedWorkoutIndex == index;
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Color.lerp(
+                                          darkMode.colorScheme.secondary,
+                                          Colors.grey,
+                                          0.18)
+                                      : darkMode.colorScheme.secondary,
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(15)),
+                                ),
+                                margin: const EdgeInsets.only(
+                                    top: 10, left: 15, right: 15),
+                                child: ListTile(
+                                  title: Text(
+                                    workout.name,
+                                    style: TextStyle(
+                                      color:
+                                          darkMode.colorScheme.inversePrimary,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    if (selectedWorkoutIndex != null) {
+                                      setState(() {
+                                        selectedWorkoutIndex = null;
+                                      });
+                                    } else {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LogPage(
+                                            workoutName: workout.name,
+                                            workoutId: workout.workoutID,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    setState(() {
+                                      selectedWorkoutIndex = index;
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
