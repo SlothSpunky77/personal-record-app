@@ -322,14 +322,14 @@ class _LogPageState extends State<LogPage> {
                       IconButton(
                         onPressed: () {
                           double weight = double.tryParse(
-                                  setInputs[index].weightController.text) ??
+                                  updateInputs[index].weightController.text) ??
                               0;
                           int reps = int.tryParse(
-                                  setInputs[index].repsController.text) ??
+                                  updateInputs[index].repsController.text) ??
                               0;
                           setStateDialog(
                             () {
-                              setInputs.add(_SetInput()
+                              updateInputs.add(_SetInput()
                                 ..weightController.text = weight.toString()
                                 ..repsController.text = reps.toString());
                             },
