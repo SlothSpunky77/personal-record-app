@@ -6,7 +6,6 @@ import 'package:pr/theme/theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -20,18 +19,19 @@ class _HomePageState extends State<HomePage> {
 
   final GlobalKey infoIconKey = GlobalKey();
   OverlayEntry? infoOverlayEntry;
+  final GlobalKey onboardKey = GlobalKey();
+  OverlayEntry? onboardOverlayEntry;
+  final GlobalKey colorInfoKey = GlobalKey();
+  OverlayEntry? colorHelpEntry;
 
-  final GlobalKey fabKey = GlobalKey();
-  OverlayEntry? fabOnboardingOverlayEntry;
+  Color pickedColor = Colors.white;
 
   @override
   void initState() {
     super.initState();
     groupFetch().then((_) {
       if (groupsList.isEmpty) {
-        Future.delayed(const Duration(milliseconds: 800), () {
-          showFabOnboardingOverlay();
-        });
+        Future.delayed(const Duration(milliseconds: 500), showOnboardOverlay);
       }
     });
   }
@@ -39,7 +39,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     hideInfoOverlay();
-    hideFabOnboardingOverlay();
+    hideOnboardOverlay();
+    hideColorHelpOverlay();
+    textController.dispose();
     super.dispose();
   }
 
@@ -50,7 +52,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Color pickedColor = Colors.white;
   void createGroup() {
     showDialog(
       context: context,
@@ -63,36 +64,13 @@ class _HomePageState extends State<HomePage> {
             width: 5,
           ),
         ),
-        title: Row(
-          children: [
-            Text(
-              'New Group',
-              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
-            ),
-            Spacer(),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.info_outline_rounded,
-                  color: darkMode.colorScheme.inversePrimary),
-            ),
-          ],
+        title: Text(
+          'New Group',
+          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    "This is where you can add a muscle group within which you can add workouts for that muscle group.\nThe color can also be changed. Tap on the white box to change the default color.",
-                    style: TextStyle(
-                      color: darkMode.colorScheme.inversePrimary,
-                    ),
-                  ),
-                )
-              ],
-            ),
-            SizedBox(height: 20),
             TextField(
               style: TextStyle(
                 color: darkMode.colorScheme.inversePrimary,
@@ -107,15 +85,35 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 10),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 const Text(
                   "Group color: ",
                   style: TextStyle(color: Colors.white),
                 ),
+                IconButton(
+                  key: colorInfoKey,
+                  onPressed: () {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      showColorHelpOverlay();
+                    });
+                  },
+                  icon: Icon(Icons.info_outline_rounded,
+                      color: darkMode.colorScheme.inversePrimary),
+                ),
+                Spacer(),
                 StatefulBuilder(
                   builder: (context, setState) {
                     return TextButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(pickedColor),
+                        shape: WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      child: const Text(""),
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -156,20 +154,12 @@ class _HomePageState extends State<HomePage> {
                           ),
                         );
                       },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(pickedColor),
-                        shape: WidgetStatePropertyAll(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      child: const Text(""),
                     );
                   },
                 ),
               ],
             ),
+            SizedBox(height: 10),
           ],
         ),
         actions: [
@@ -197,14 +187,10 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: darkMode.colorScheme.primary,
-        title: Text(
-          'Edit Group',
-          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
-        ),
+        title: Text('Edit Group',
+            style: TextStyle(color: darkMode.colorScheme.inversePrimary)),
         content: TextField(
-          style: TextStyle(
-            color: darkMode.colorScheme.inversePrimary,
-          ),
+          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
           controller: textController,
           autofocus: true,
           decoration: const InputDecoration(
@@ -221,10 +207,8 @@ class _HomePageState extends State<HomePage> {
               textController.clear();
               selectedTileIndex = null;
             },
-            child: Text(
-              'UPDATE',
-              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
-            ),
+            child: Text('UPDATE',
+                style: TextStyle(color: darkMode.colorScheme.inversePrimary)),
           ),
         ],
       ),
@@ -236,10 +220,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: darkMode.colorScheme.primary,
-        title: Text(
-          'Delete group \'$name\'?',
-          style: TextStyle(color: darkMode.colorScheme.inversePrimary),
-        ),
+        title: Text("Delete group '$name'?",
+            style: TextStyle(color: darkMode.colorScheme.inversePrimary)),
         actions: [
           MaterialButton(
             onPressed: () async {
@@ -248,10 +230,8 @@ class _HomePageState extends State<HomePage> {
               await groupFetch();
               selectedTileIndex = null;
             },
-            child: Text(
-              'DELETE',
-              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
-            ),
+            child: Text('DELETE',
+                style: TextStyle(color: darkMode.colorScheme.inversePrimary)),
           ),
         ],
       ),
@@ -393,21 +373,17 @@ class _HomePageState extends State<HomePage> {
 
   void showInfoOverlay() {
     hideInfoOverlay();
-
     final RenderBox renderBox =
         infoIconKey.currentContext!.findRenderObject() as RenderBox;
     final Size size = renderBox.size;
     final Offset position = renderBox.localToGlobal(Offset.zero);
-
     infoOverlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
           Positioned.fill(
             child: GestureDetector(
               onTap: hideInfoOverlay,
-              child: Container(
-                color: Colors.black.withOpacity(0.6),
-              ),
+              child: Container(color: Colors.black.withOpacity(0.6)),
             ),
           ),
           Positioned(
@@ -422,43 +398,34 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: darkMode.colorScheme.surface,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: darkMode.colorScheme.primary,
-                    width: 2,
-                  ),
+                  border:
+                      Border.all(color: darkMode.colorScheme.primary, width: 2),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      "Info",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: darkMode.colorScheme.inversePrimary,
-                        fontSize: 18,
-                      ),
-                    ),
+                    Text('Info',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: darkMode.colorScheme.inversePrimary,
+                            fontSize: 18)),
                     const SizedBox(height: 12),
                     Text(
-                      "Long press an item to select it.\n\nWhen selected, you can edit or delete the item using the icons that will appear in the top right.",
+                      "Add all your workout muscle groups here, within which you will have your list of exercises.\nOr not. You do you.\n\nLong press an item to select it.\nWhen selected, you can edit or delete the item using the icons that will appear in the top right.",
                       style: TextStyle(
-                        color: darkMode.colorScheme.inversePrimary,
-                        fontSize: 14,
-                      ),
+                          color: darkMode.colorScheme.inversePrimary,
+                          fontSize: 14),
                     ),
                     const SizedBox(height: 10),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: Text(
-                        "Tap anywhere to close",
-                        style: TextStyle(
-                          color: darkMode.colorScheme.inversePrimary
-                              .withOpacity(0.7),
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
+                      child: Text('Tap anywhere to close',
+                          style: TextStyle(
+                              color: darkMode.colorScheme.inversePrimary
+                                  .withOpacity(0.7),
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic)),
                     ),
                   ],
                 ),
@@ -468,7 +435,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-
     Overlay.of(context).insert(infoOverlayEntry!);
   }
 
@@ -477,21 +443,15 @@ class _HomePageState extends State<HomePage> {
     infoOverlayEntry = null;
   }
 
-  void showFabOnboardingOverlay() {
-    hideFabOnboardingOverlay();
-
+  void showOnboardOverlay() {
+    hideOnboardOverlay();
     final RenderBox renderBox =
-        fabKey.currentContext!.findRenderObject() as RenderBox;
-
+        onboardKey.currentContext!.findRenderObject() as RenderBox;
     final Size size = renderBox.size;
     final Offset position = renderBox.localToGlobal(Offset.zero);
-
-    final Offset fabCenter = Offset(
-      position.dx + (size.width / 2),
-      position.dy + (size.height / 2),
-    );
-
-    fabOnboardingOverlayEntry = OverlayEntry(
+    final Offset fabCenter =
+        Offset(position.dx + (size.width / 2), position.dy + (size.height / 2));
+    onboardOverlayEntry = OverlayEntry(
       builder: (context) => Material(
         type: MaterialType.transparency,
         child: Stack(
@@ -516,7 +476,7 @@ class _HomePageState extends State<HomePage> {
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
-                        hideFabOnboardingOverlay();
+                        hideOnboardOverlay();
                         createGroup();
                       },
                       child: Container(
@@ -543,9 +503,7 @@ class _HomePageState extends State<HomePage> {
                     color: darkMode.colorScheme.surface,
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: darkMode.colorScheme.primary,
-                      width: 2,
-                    ),
+                        color: darkMode.colorScheme.primary, width: 2),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -586,13 +544,69 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-
-    Overlay.of(context).insert(fabOnboardingOverlayEntry!);
+    Overlay.of(context).insert(onboardOverlayEntry!);
   }
 
-  void hideFabOnboardingOverlay() {
-    fabOnboardingOverlayEntry?.remove();
-    fabOnboardingOverlayEntry = null;
+  void hideOnboardOverlay() {
+    onboardOverlayEntry?.remove();
+    onboardOverlayEntry = null;
+  }
+
+  void showColorHelpOverlay() {
+    hideColorHelpOverlay();
+    final ctx = colorInfoKey.currentContext;
+    if (ctx == null)
+      return; //TODO: This seems to be cleaner code, use it above as well
+    final box = ctx.findRenderObject() as RenderBox;
+    // final size = box.size;
+    final pos = box.localToGlobal(Offset.zero);
+
+    colorHelpEntry = OverlayEntry(
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: hideColorHelpOverlay,
+              child: Container(color: Colors.black54),
+            ),
+          ),
+          Positioned(
+            left: pos.dx + 10,
+            top: pos.dy - 60,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 220,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: darkMode.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: darkMode.colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  "Tap the white box to change the default color.",
+                  style: TextStyle(
+                    color: darkMode.colorScheme.inversePrimary,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    Overlay.of(context).insert(colorHelpEntry!);
+  }
+
+  void hideColorHelpOverlay() {
+    colorHelpEntry?.remove();
+    colorHelpEntry = null;
   }
 
   @override
@@ -616,11 +630,7 @@ class _HomePageState extends State<HomePage> {
             actions: [
               if (selectedTileIndex != null) ...[
                 IconButton(
-                  onPressed: () {
-                    editGroup(
-                      groupsList[selectedTileIndex!],
-                    );
-                  },
+                  onPressed: () => editGroup(groupsList[selectedTileIndex!]),
                   icon: const Icon(Icons.edit),
                 ),
                 IconButton(
@@ -650,7 +660,7 @@ class _HomePageState extends State<HomePage> {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: const AssetImage("assets/images/personal_record.png"),
+                  image: const AssetImage('assets/images/personal_record.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     const Color.fromARGB(255, 28, 28, 28).withOpacity(0.5),
@@ -662,83 +672,67 @@ class _HomePageState extends State<HomePage> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(
-                        height: 10,
-                      ),
+                      const SizedBox(height: 10),
                       Column(
-                        children: List.generate(
-                          groupsList.length,
-                          (index) {
-                            final group = groupsList[index];
-                            final bool isSelected = selectedTileIndex == index;
-                            final Color baseColor = Color(group.color);
-                            final Color tileColor = isSelected
-                                ? Color.lerp(
-                                        baseColor,
-                                        const Color.fromARGB(255, 44, 44, 44),
-                                        0.9) ??
-                                    baseColor
-                                : darkMode.colorScheme.primary;
-                            final Color gradientColor = isSelected
-                                ? Color.lerp(baseColor, Colors.white, 0.2) ??
-                                    baseColor
-                                : Color.lerp(darkMode.colorScheme.primary,
-                                        baseColor, 0.3) ??
-                                    darkMode.colorScheme.primary;
-                            return Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                gradient: LinearGradient(
-                                  colors: [
-                                    tileColor,
-                                    gradientColor,
-                                  ],
-                                  stops: const [0.4, 1],
-                                ),
+                        children: List.generate(groupsList.length, (index) {
+                          final group = groupsList[index];
+                          final bool isSelected = selectedTileIndex == index;
+                          final Color baseColor = Color(group.color);
+                          final Color tileColor = isSelected
+                              ? (Color.lerp(
+                                      baseColor,
+                                      const Color.fromARGB(255, 44, 44, 44),
+                                      0.9) ??
+                                  baseColor)
+                              : darkMode.colorScheme.primary;
+                          final Color gradientColor = isSelected
+                              ? (Color.lerp(baseColor, Colors.white, 0.2) ??
+                                  baseColor)
+                              : (Color.lerp(darkMode.colorScheme.primary,
+                                      baseColor, 0.3) ??
+                                  darkMode.colorScheme.primary);
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(25),
+                              gradient: LinearGradient(
+                                colors: [tileColor, gradientColor],
+                                stops: const [0.4, 1],
                               ),
-                              margin: const EdgeInsets.only(
-                                left: 20,
-                                right: 20,
-                                bottom: 10,
-                              ),
-                              child: ListTile(
-                                onTap: () {
-                                  if (selectedTileIndex != null) {
-                                    setState(() {
-                                      selectedTileIndex = null;
-                                    });
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ExercisePage(
-                                          groupName: group.groupName,
-                                          id: group.groupID,
-                                          color: group.color,
-                                        ),
+                            ),
+                            margin: const EdgeInsets.only(
+                                left: 20, right: 20, bottom: 10),
+                            child: ListTile(
+                              onTap: () {
+                                if (selectedTileIndex != null) {
+                                  setState(() => selectedTileIndex = null);
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ExercisePage(
+                                        groupName: group.groupName,
+                                        id: group.groupID,
+                                        color: group.color,
                                       ),
-                                    );
-                                  }
-                                },
-                                onLongPress: () {
-                                  setState(() {
-                                    selectedTileIndex = index;
-                                  });
-                                },
-                                contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 20),
-                                title: Text(
-                                  group.groupName,
-                                  style: TextStyle(
-                                    color: darkMode.colorScheme.inversePrimary,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                    ),
+                                  );
+                                }
+                              },
+                              onLongPress: () =>
+                                  setState(() => selectedTileIndex = index),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 20),
+                              title: Text(
+                                group.groupName,
+                                style: TextStyle(
+                                  color: darkMode.colorScheme.inversePrimary,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        }),
                       ),
                     ],
                   ),
@@ -755,10 +749,10 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   children: [
                     FloatingActionButton(
-                      key: fabKey,
+                      key: onboardKey,
                       backgroundColor: darkMode.colorScheme.primary,
                       onPressed: () {
-                        hideFabOnboardingOverlay();
+                        hideOnboardOverlay();
                         createGroup();
                       },
                       child: Icon(
@@ -791,35 +785,22 @@ class HolePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Create a path for the entire screen
     final Path backgroundPath = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    // Create a path for the hole
     final Path holePath = Path()
       ..addRRect(
         RRect.fromRectAndRadius(
           Rect.fromCenter(
-            center: holeOffset,
-            width: holeSize.width,
-            height: holeSize.height,
-          ),
+              center: holeOffset,
+              width: holeSize.width,
+              height: holeSize.height),
           const Radius.circular(40),
         ),
       );
-
-    // Create a combined path (background minus hole)
-    final Path finalPath = Path.combine(
-      PathOperation.difference,
-      backgroundPath,
-      holePath,
-    );
-
-    // Fill with semi-transparent black
+    final Path finalPath =
+        Path.combine(PathOperation.difference, backgroundPath, holePath);
     canvas.drawPath(
-      finalPath,
-      Paint()..color = Colors.black.withOpacity(opacity),
-    );
+        finalPath, Paint()..color = Colors.black.withOpacity(opacity));
   }
 
   @override
