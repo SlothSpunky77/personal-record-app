@@ -151,6 +151,18 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  "OK",
+                                  style: TextStyle(
+                                    color: darkMode.colorScheme.inversePrimary,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },
