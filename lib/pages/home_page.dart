@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:pr/models/database.dart';
 import 'package:pr/pages/exercise_page.dart';
+import 'package:pr/pages/workout_session_page.dart';
 import 'package:pr/theme/theme.dart';
 
 class HomePage extends StatefulWidget {
@@ -88,7 +89,7 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 const Text(
-                  "Group color: ",
+                  "Group color:",
                   style: TextStyle(color: Colors.white),
                 ),
                 IconButton(
@@ -98,8 +99,11 @@ class _HomePageState extends State<HomePage> {
                       showColorHelpOverlay();
                     });
                   },
-                  icon: Icon(Icons.info_outline_rounded,
-                      color: darkMode.colorScheme.inversePrimary),
+                  icon: Icon(
+                    Icons.info_outline,
+                    color: darkMode.colorScheme.inversePrimary,
+                  ),
+                  iconSize: 20,
                 ),
                 Spacer(),
                 StatefulBuilder(
@@ -250,138 +254,149 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // startWorkout() {
-  //   List<int> selectedIndices = [];
-  //   List idList = [];
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => Dialog(
-  //       shape: RoundedRectangleBorder(
-  //         side: BorderSide(
-  //           color: darkMode.colorScheme.secondary,
-  //           width: 7,
-  //         ),
-  //         borderRadius: BorderRadius.circular(20),
-  //       ),
-  //       backgroundColor: darkMode.colorScheme.surface,
-  //       child: StatefulBuilder(
-  //         builder: (context, setState) {
-  //           return SizedBox(
-  //             height: 500,
-  //             width: 400,
-  //             child: Container(
-  //               padding: const EdgeInsets.only(
-  //                   left: 20, right: 20, bottom: 10, top: 10),
-  //               child: Column(
-  //                 children: [
-  //                   Padding(
-  //                     padding: const EdgeInsets.only(bottom: 10, top: 5),
-  //                     child: Align(
-  //                       alignment: Alignment.centerLeft,
-  //                       child: Text(
-  //                         "Add to today's workout",
-  //                         style: TextStyle(
-  //                           color: darkMode.colorScheme.inversePrimary,
-  //                           fontSize: 25,
-  //                           fontWeight: FontWeight.w900,
-  //                         ),
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   Expanded(
-  //                     child: ListView.builder(
-  //                       itemCount: groupsList.length,
-  //                       itemBuilder: (context, index) {
-  //                         final group = groupsList[index];
-  //                         bool isSelected = selectedIndices.contains(index);
-  //                         return Container(
-  //                           decoration: BoxDecoration(
-  //                             border: Border.all(
-  //                               color: Color(group.color),
-  //                             ),
-  //                             color: isSelected
-  //                                 ? darkMode.colorScheme.primary
-  //                                 : darkMode.colorScheme.secondary,
-  //                             borderRadius: BorderRadius.circular(20),
-  //                           ),
-  //                           margin: const EdgeInsets.only(top: 5, bottom: 5),
-  //                           child: ListTile(
-  //                             splashColor: Colors.transparent,
-  //                             onTap: () {
-  //                               setState(() {
-  //                                 if (isSelected) {
-  //                                   selectedIndices.remove(index);
-  //                                   idList.remove(group.groupID);
-  //                                 } else {
-  //                                   selectedIndices.add(index);
-  //                                   idList.add(group.groupID);
-  //                                 }
-  //                               });
-  //                             },
-  //                             contentPadding: const EdgeInsets.symmetric(
-  //                               horizontal: 15,
-  //                             ),
-  //                             title: Text(
-  //                               group.groupName,
-  //                               style: TextStyle(
-  //                                 color: darkMode.colorScheme.inversePrimary,
-  //                                 fontSize: 23,
-  //                                 fontWeight: FontWeight.bold,
-  //                               ),
-  //                             ),
-  //                             trailing: isSelected
-  //                                 ? const Icon(Icons.check, color: Colors.white)
-  //                                 : null,
-  //                           ),
-  //                         );
-  //                       },
-  //                     ),
-  //                   ),
-  //                   Padding(
-  //                     padding: const EdgeInsets.only(
-  //                         top: 10, bottom: 5, right: 10, left: 10),
-  //                     child: Row(
-  //                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                       children: [
-  //                         TextButton(
-  //                           onPressed: () {
-  //                             Navigator.pop(context);
-  //                           },
-  //                           child: const Text(
-  //                             "CANCEL",
-  //                             style:
-  //                                 TextStyle(color: Colors.white, fontSize: 16),
-  //                           ),
-  //                         ),
-  //                         TextButton(
-  //                           onPressed: () {
-  //                             Navigator.pop(context);
-  //                             // Navigator.push(
-  //                             //   context,
-  //                             //   MaterialPageRoute(
-  //                             //     builder: (context) =>
-  //                             //         WorkoutSession(list: idList),
-  //                             //   ),
-  //                             // );
-  //                           },
-  //                           child: const Text(
-  //                             "PROCEED",
-  //                             style:
-  //                                 TextStyle(color: Colors.white, fontSize: 16),
-  //                           ),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //             ),
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
+  void startWorkout() {
+    List<int> selectedIndices = [];
+    List idList = [];
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: darkMode.colorScheme.secondary,
+            width: 7,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: darkMode.colorScheme.surface,
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            final double maxListHeight =
+                MediaQuery.of(context).size.height * 0.42;
+
+            return SizedBox(
+              //height: 600,
+              width: 400,
+              child: Container(
+                padding: const EdgeInsets.only(
+                    left: 20, right: 20, bottom: 10, top: 10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10, top: 5),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "What are we doing today?",
+                          style: TextStyle(
+                            color: darkMode.colorScheme.inversePrimary,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: maxListHeight,
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: groupsList.length,
+                        itemBuilder: (context, index) {
+                          final group = groupsList[index];
+                          bool isSelected = selectedIndices.contains(index);
+                          return Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Color(group.color),
+                              ),
+                              color: isSelected
+                                  ? darkMode.colorScheme.primary
+                                  : darkMode.colorScheme.secondary,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            margin: const EdgeInsets.only(top: 5, bottom: 5),
+                            child: ListTile(
+                              splashColor: Colors.transparent,
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    selectedIndices.remove(index);
+                                    idList.remove(group.groupID);
+                                  } else {
+                                    selectedIndices.add(index);
+                                    idList.add(group.groupID);
+                                  }
+                                });
+                              },
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                              title: Text(
+                                group.groupName,
+                                style: TextStyle(
+                                  color: darkMode.colorScheme.inversePrimary,
+                                  fontSize: 23,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(Icons.check, color: Colors.white)
+                                  : null,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 10, bottom: 5, right: 10, left: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              "CANCEL",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              if (idList.isNotEmpty) {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => WorkoutSessionPage(
+                                      selectedGroupIds: List<int>.from(idList),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              "PROCEED",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
   void showInfoOverlay() {
     hideInfoOverlay();
@@ -746,33 +761,67 @@ class _HomePageState extends State<HomePage> {
                           );
                         }),
                       ),
+                      SizedBox(height: 85),
                     ],
                   ),
                 ),
               ),
             ),
           ),
-          floatingActionButton: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+          // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                alignment: Alignment.bottomRight,
-                child: Column(
-                  children: [
-                    FloatingActionButton(
-                      key: onboardKey,
-                      backgroundColor: darkMode.colorScheme.primary,
-                      onPressed: () {
-                        hideOnboardOverlay();
-                        createGroup();
-                      },
-                      child: Icon(
-                        Icons.add,
-                        color: darkMode.colorScheme.inversePrimary,
-                      ),
+              SizedBox(
+                width: 100,
+              ),
+              TextButton(
+                onPressed: startWorkout,
+                style: TextButton.styleFrom(
+                  elevation: 5,
+                  shadowColor: Colors.black,
+                  backgroundColor: darkMode.colorScheme.secondary,
+                  foregroundColor: darkMode.colorScheme.inversePrimary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 18,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(17),
+                    side: BorderSide(
+                      color: darkMode.colorScheme.primary,
+                      width: 4,
                     ),
-                  ],
+                  ),
+                ),
+                child: const Text(
+                  "Start Workout",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              // const SizedBox(width: 15),
+              IconButton(
+                key: onboardKey,
+                style: ButtonStyle(
+                  padding: WidgetStateProperty.all(EdgeInsets.all(20)),
+                  shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(17))),
+                  backgroundColor:
+                      WidgetStateProperty.all(darkMode.colorScheme.primary),
+                  shadowColor: WidgetStateProperty.all(Colors.black),
+                  elevation: WidgetStateProperty.all(4),
+                ),
+                onPressed: () {
+                  hideOnboardOverlay();
+                  createGroup();
+                },
+                icon: Icon(
+                  Icons.add,
+                  color: darkMode.colorScheme.inversePrimary,
                 ),
               ),
             ],

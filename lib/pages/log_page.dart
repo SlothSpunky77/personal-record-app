@@ -628,110 +628,114 @@ class _LogPageState extends State<LogPage> {
                             style: TextStyle(color: Colors.grey),
                           ),
                         )
-                      : ListView.builder(
-                          itemCount: logWithSets.length,
-                          itemBuilder: (context, logIndex) {
-                            final displayIndex =
-                                logWithSets.length - 1 - logIndex;
-                            final logWithSet = logWithSets[displayIndex];
-                            final log = logWithSet.log;
-                            final sets = logWithSet.sets;
-                            final dt = log.dt;
-                            final dateStr =
-                                '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
-                            final timeStr =
-                                '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-                            final isSelected = selectedLogIndex == displayIndex;
-                            return GestureDetector(
-                              onLongPress: () {
-                                setState(() {
-                                  selectedLogIndex = displayIndex;
-                                });
-                              },
-                              onTap: () {
-                                setState(() {
-                                  selectedLogIndex = null;
-                                });
-                              },
-                              child: Card(
-                                color: isSelected
-                                    ? Colors.grey[800]
-                                    : Colors.grey[900],
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 6, horizontal: 2),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            '$dateStr $timeStr',
-                                            style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 14),
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: List.generate(sets.length,
-                                            (setIndex) {
-                                          final set = sets[setIndex];
-                                          return Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 2.0),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  'Set ${setIndex + 1}:',
-                                                  style: TextStyle(
+                      : Builder(builder: (context) {
+                          logWithSets = logWithSets.reversed.toList();
+
+                          return ListView.builder(
+                            itemCount: logWithSets.length,
+                            itemBuilder: (context, logIndex) {
+                              final logWithSet = logWithSets[logIndex];
+                              final log = logWithSet.log;
+                              final sets = logWithSet.sets;
+                              final dt = log.dt;
+                              final dateStr =
+                                  '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+                              final timeStr =
+                                  '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+                              final isSelected = selectedLogIndex == logIndex;
+                              return GestureDetector(
+                                onLongPress: () {
+                                  setState(() {
+                                    selectedLogIndex = logIndex;
+                                  });
+                                },
+                                onTap: () {
+                                  setState(() {
+                                    selectedLogIndex = null;
+                                  });
+                                },
+                                child: Card(
+                                  color: isSelected
+                                      ? Colors.grey[800]
+                                      : Colors.grey[900],
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 6, horizontal: 2),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              '$dateStr $timeStr',
+                                              style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: List.generate(sets.length,
+                                              (setIndex) {
+                                            final set = sets[setIndex];
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 2.0),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'Set ${setIndex + 1}:',
+                                                    style: TextStyle(
+                                                        color: darkMode
+                                                            .colorScheme
+                                                            .inversePrimary,
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                  Text(
+                                                    ' Weight: ${set.weight}, Reps: ${set.reps}',
+                                                    style: TextStyle(
                                                       color: darkMode
                                                           .colorScheme
                                                           .inversePrimary,
                                                       fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w500),
-                                                ),
-                                                Text(
-                                                  ' Weight: ${set.weight}, Reps: ${set.reps}',
-                                                  style: TextStyle(
-                                                    color: darkMode.colorScheme
-                                                        .inversePrimary,
-                                                    fontSize: 18,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        }),
-                                      ),
-                                      if (log.note != null &&
-                                          log.note!.isNotEmpty) ...[
-                                        const SizedBox(height: 5),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 10, right: 10),
-                                          child: Text(
-                                            'Note: ${log.note}',
-                                            style: TextStyle(
-                                              color: Colors.amber[200],
-                                              fontSize: 15,
-                                              fontStyle: FontStyle.italic,
+                                                ],
+                                              ),
+                                            );
+                                          }),
+                                        ),
+                                        if (log.note != null &&
+                                            log.note!.isNotEmpty) ...[
+                                          const SizedBox(height: 5),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 10, right: 10),
+                                            child: Text(
+                                              'Note: ${log.note}',
+                                              style: TextStyle(
+                                                color: Colors.amber[200],
+                                                fontSize: 15,
+                                                fontStyle: FontStyle.italic,
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                        ],
                                       ],
-                                    ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          );
+                        }),
                 ),
               ],
             ),
