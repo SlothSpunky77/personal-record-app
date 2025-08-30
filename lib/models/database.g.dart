@@ -961,6 +961,451 @@ class LogSetsCompanion extends UpdateCompanion<LogSet> {
   }
 }
 
+class $PersonalRecordsTable extends PersonalRecords
+    with TableInfo<$PersonalRecordsTable, PersonalRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PersonalRecordsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _prIDMeta = const VerificationMeta('prID');
+  @override
+  late final GeneratedColumn<int> prID = GeneratedColumn<int>(
+      'pr_i_d', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _workoutIDMeta =
+      const VerificationMeta('workoutID');
+  @override
+  late final GeneratedColumn<int> workoutID = GeneratedColumn<int>(
+      'workout_i_d', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES workouts (workout_i_d)'));
+  static const VerificationMeta _maxWeightMeta =
+      const VerificationMeta('maxWeight');
+  @override
+  late final GeneratedColumn<double> maxWeight = GeneratedColumn<double>(
+      'max_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _maxWeightRepsMeta =
+      const VerificationMeta('maxWeightReps');
+  @override
+  late final GeneratedColumn<int> maxWeightReps = GeneratedColumn<int>(
+      'max_weight_reps', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _maxVolumeWeightMeta =
+      const VerificationMeta('maxVolumeWeight');
+  @override
+  late final GeneratedColumn<double> maxVolumeWeight = GeneratedColumn<double>(
+      'max_volume_weight', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _maxVolumeRepsMeta =
+      const VerificationMeta('maxVolumeReps');
+  @override
+  late final GeneratedColumn<int> maxVolumeReps = GeneratedColumn<int>(
+      'max_volume_reps', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _maxWeightDateMeta =
+      const VerificationMeta('maxWeightDate');
+  @override
+  late final GeneratedColumn<DateTime> maxWeightDate =
+      GeneratedColumn<DateTime>('max_weight_date', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _maxVolumeDateMeta =
+      const VerificationMeta('maxVolumeDate');
+  @override
+  late final GeneratedColumn<DateTime> maxVolumeDate =
+      GeneratedColumn<DateTime>('max_volume_date', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        prID,
+        workoutID,
+        maxWeight,
+        maxWeightReps,
+        maxVolumeWeight,
+        maxVolumeReps,
+        maxWeightDate,
+        maxVolumeDate
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'personal_records';
+  @override
+  VerificationContext validateIntegrity(Insertable<PersonalRecord> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('pr_i_d')) {
+      context.handle(
+          _prIDMeta, prID.isAcceptableOrUnknown(data['pr_i_d']!, _prIDMeta));
+    }
+    if (data.containsKey('workout_i_d')) {
+      context.handle(
+          _workoutIDMeta,
+          workoutID.isAcceptableOrUnknown(
+              data['workout_i_d']!, _workoutIDMeta));
+    } else if (isInserting) {
+      context.missing(_workoutIDMeta);
+    }
+    if (data.containsKey('max_weight')) {
+      context.handle(_maxWeightMeta,
+          maxWeight.isAcceptableOrUnknown(data['max_weight']!, _maxWeightMeta));
+    } else if (isInserting) {
+      context.missing(_maxWeightMeta);
+    }
+    if (data.containsKey('max_weight_reps')) {
+      context.handle(
+          _maxWeightRepsMeta,
+          maxWeightReps.isAcceptableOrUnknown(
+              data['max_weight_reps']!, _maxWeightRepsMeta));
+    } else if (isInserting) {
+      context.missing(_maxWeightRepsMeta);
+    }
+    if (data.containsKey('max_volume_weight')) {
+      context.handle(
+          _maxVolumeWeightMeta,
+          maxVolumeWeight.isAcceptableOrUnknown(
+              data['max_volume_weight']!, _maxVolumeWeightMeta));
+    } else if (isInserting) {
+      context.missing(_maxVolumeWeightMeta);
+    }
+    if (data.containsKey('max_volume_reps')) {
+      context.handle(
+          _maxVolumeRepsMeta,
+          maxVolumeReps.isAcceptableOrUnknown(
+              data['max_volume_reps']!, _maxVolumeRepsMeta));
+    } else if (isInserting) {
+      context.missing(_maxVolumeRepsMeta);
+    }
+    if (data.containsKey('max_weight_date')) {
+      context.handle(
+          _maxWeightDateMeta,
+          maxWeightDate.isAcceptableOrUnknown(
+              data['max_weight_date']!, _maxWeightDateMeta));
+    } else if (isInserting) {
+      context.missing(_maxWeightDateMeta);
+    }
+    if (data.containsKey('max_volume_date')) {
+      context.handle(
+          _maxVolumeDateMeta,
+          maxVolumeDate.isAcceptableOrUnknown(
+              data['max_volume_date']!, _maxVolumeDateMeta));
+    } else if (isInserting) {
+      context.missing(_maxVolumeDateMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {prID};
+  @override
+  PersonalRecord map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PersonalRecord(
+      prID: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}pr_i_d'])!,
+      workoutID: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}workout_i_d'])!,
+      maxWeight: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}max_weight'])!,
+      maxWeightReps: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}max_weight_reps'])!,
+      maxVolumeWeight: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}max_volume_weight'])!,
+      maxVolumeReps: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}max_volume_reps'])!,
+      maxWeightDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}max_weight_date'])!,
+      maxVolumeDate: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}max_volume_date'])!,
+    );
+  }
+
+  @override
+  $PersonalRecordsTable createAlias(String alias) {
+    return $PersonalRecordsTable(attachedDatabase, alias);
+  }
+}
+
+class PersonalRecord extends DataClass implements Insertable<PersonalRecord> {
+  final int prID;
+  final int workoutID;
+  final double maxWeight;
+  final int maxWeightReps;
+  final double maxVolumeWeight;
+  final int maxVolumeReps;
+  final DateTime maxWeightDate;
+  final DateTime maxVolumeDate;
+  const PersonalRecord(
+      {required this.prID,
+      required this.workoutID,
+      required this.maxWeight,
+      required this.maxWeightReps,
+      required this.maxVolumeWeight,
+      required this.maxVolumeReps,
+      required this.maxWeightDate,
+      required this.maxVolumeDate});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['pr_i_d'] = Variable<int>(prID);
+    map['workout_i_d'] = Variable<int>(workoutID);
+    map['max_weight'] = Variable<double>(maxWeight);
+    map['max_weight_reps'] = Variable<int>(maxWeightReps);
+    map['max_volume_weight'] = Variable<double>(maxVolumeWeight);
+    map['max_volume_reps'] = Variable<int>(maxVolumeReps);
+    map['max_weight_date'] = Variable<DateTime>(maxWeightDate);
+    map['max_volume_date'] = Variable<DateTime>(maxVolumeDate);
+    return map;
+  }
+
+  PersonalRecordsCompanion toCompanion(bool nullToAbsent) {
+    return PersonalRecordsCompanion(
+      prID: Value(prID),
+      workoutID: Value(workoutID),
+      maxWeight: Value(maxWeight),
+      maxWeightReps: Value(maxWeightReps),
+      maxVolumeWeight: Value(maxVolumeWeight),
+      maxVolumeReps: Value(maxVolumeReps),
+      maxWeightDate: Value(maxWeightDate),
+      maxVolumeDate: Value(maxVolumeDate),
+    );
+  }
+
+  factory PersonalRecord.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PersonalRecord(
+      prID: serializer.fromJson<int>(json['prID']),
+      workoutID: serializer.fromJson<int>(json['workoutID']),
+      maxWeight: serializer.fromJson<double>(json['maxWeight']),
+      maxWeightReps: serializer.fromJson<int>(json['maxWeightReps']),
+      maxVolumeWeight: serializer.fromJson<double>(json['maxVolumeWeight']),
+      maxVolumeReps: serializer.fromJson<int>(json['maxVolumeReps']),
+      maxWeightDate: serializer.fromJson<DateTime>(json['maxWeightDate']),
+      maxVolumeDate: serializer.fromJson<DateTime>(json['maxVolumeDate']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'prID': serializer.toJson<int>(prID),
+      'workoutID': serializer.toJson<int>(workoutID),
+      'maxWeight': serializer.toJson<double>(maxWeight),
+      'maxWeightReps': serializer.toJson<int>(maxWeightReps),
+      'maxVolumeWeight': serializer.toJson<double>(maxVolumeWeight),
+      'maxVolumeReps': serializer.toJson<int>(maxVolumeReps),
+      'maxWeightDate': serializer.toJson<DateTime>(maxWeightDate),
+      'maxVolumeDate': serializer.toJson<DateTime>(maxVolumeDate),
+    };
+  }
+
+  PersonalRecord copyWith(
+          {int? prID,
+          int? workoutID,
+          double? maxWeight,
+          int? maxWeightReps,
+          double? maxVolumeWeight,
+          int? maxVolumeReps,
+          DateTime? maxWeightDate,
+          DateTime? maxVolumeDate}) =>
+      PersonalRecord(
+        prID: prID ?? this.prID,
+        workoutID: workoutID ?? this.workoutID,
+        maxWeight: maxWeight ?? this.maxWeight,
+        maxWeightReps: maxWeightReps ?? this.maxWeightReps,
+        maxVolumeWeight: maxVolumeWeight ?? this.maxVolumeWeight,
+        maxVolumeReps: maxVolumeReps ?? this.maxVolumeReps,
+        maxWeightDate: maxWeightDate ?? this.maxWeightDate,
+        maxVolumeDate: maxVolumeDate ?? this.maxVolumeDate,
+      );
+  PersonalRecord copyWithCompanion(PersonalRecordsCompanion data) {
+    return PersonalRecord(
+      prID: data.prID.present ? data.prID.value : this.prID,
+      workoutID: data.workoutID.present ? data.workoutID.value : this.workoutID,
+      maxWeight: data.maxWeight.present ? data.maxWeight.value : this.maxWeight,
+      maxWeightReps: data.maxWeightReps.present
+          ? data.maxWeightReps.value
+          : this.maxWeightReps,
+      maxVolumeWeight: data.maxVolumeWeight.present
+          ? data.maxVolumeWeight.value
+          : this.maxVolumeWeight,
+      maxVolumeReps: data.maxVolumeReps.present
+          ? data.maxVolumeReps.value
+          : this.maxVolumeReps,
+      maxWeightDate: data.maxWeightDate.present
+          ? data.maxWeightDate.value
+          : this.maxWeightDate,
+      maxVolumeDate: data.maxVolumeDate.present
+          ? data.maxVolumeDate.value
+          : this.maxVolumeDate,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalRecord(')
+          ..write('prID: $prID, ')
+          ..write('workoutID: $workoutID, ')
+          ..write('maxWeight: $maxWeight, ')
+          ..write('maxWeightReps: $maxWeightReps, ')
+          ..write('maxVolumeWeight: $maxVolumeWeight, ')
+          ..write('maxVolumeReps: $maxVolumeReps, ')
+          ..write('maxWeightDate: $maxWeightDate, ')
+          ..write('maxVolumeDate: $maxVolumeDate')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(prID, workoutID, maxWeight, maxWeightReps,
+      maxVolumeWeight, maxVolumeReps, maxWeightDate, maxVolumeDate);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PersonalRecord &&
+          other.prID == this.prID &&
+          other.workoutID == this.workoutID &&
+          other.maxWeight == this.maxWeight &&
+          other.maxWeightReps == this.maxWeightReps &&
+          other.maxVolumeWeight == this.maxVolumeWeight &&
+          other.maxVolumeReps == this.maxVolumeReps &&
+          other.maxWeightDate == this.maxWeightDate &&
+          other.maxVolumeDate == this.maxVolumeDate);
+}
+
+class PersonalRecordsCompanion extends UpdateCompanion<PersonalRecord> {
+  final Value<int> prID;
+  final Value<int> workoutID;
+  final Value<double> maxWeight;
+  final Value<int> maxWeightReps;
+  final Value<double> maxVolumeWeight;
+  final Value<int> maxVolumeReps;
+  final Value<DateTime> maxWeightDate;
+  final Value<DateTime> maxVolumeDate;
+  const PersonalRecordsCompanion({
+    this.prID = const Value.absent(),
+    this.workoutID = const Value.absent(),
+    this.maxWeight = const Value.absent(),
+    this.maxWeightReps = const Value.absent(),
+    this.maxVolumeWeight = const Value.absent(),
+    this.maxVolumeReps = const Value.absent(),
+    this.maxWeightDate = const Value.absent(),
+    this.maxVolumeDate = const Value.absent(),
+  });
+  PersonalRecordsCompanion.insert({
+    this.prID = const Value.absent(),
+    required int workoutID,
+    required double maxWeight,
+    required int maxWeightReps,
+    required double maxVolumeWeight,
+    required int maxVolumeReps,
+    required DateTime maxWeightDate,
+    required DateTime maxVolumeDate,
+  })  : workoutID = Value(workoutID),
+        maxWeight = Value(maxWeight),
+        maxWeightReps = Value(maxWeightReps),
+        maxVolumeWeight = Value(maxVolumeWeight),
+        maxVolumeReps = Value(maxVolumeReps),
+        maxWeightDate = Value(maxWeightDate),
+        maxVolumeDate = Value(maxVolumeDate);
+  static Insertable<PersonalRecord> custom({
+    Expression<int>? prID,
+    Expression<int>? workoutID,
+    Expression<double>? maxWeight,
+    Expression<int>? maxWeightReps,
+    Expression<double>? maxVolumeWeight,
+    Expression<int>? maxVolumeReps,
+    Expression<DateTime>? maxWeightDate,
+    Expression<DateTime>? maxVolumeDate,
+  }) {
+    return RawValuesInsertable({
+      if (prID != null) 'pr_i_d': prID,
+      if (workoutID != null) 'workout_i_d': workoutID,
+      if (maxWeight != null) 'max_weight': maxWeight,
+      if (maxWeightReps != null) 'max_weight_reps': maxWeightReps,
+      if (maxVolumeWeight != null) 'max_volume_weight': maxVolumeWeight,
+      if (maxVolumeReps != null) 'max_volume_reps': maxVolumeReps,
+      if (maxWeightDate != null) 'max_weight_date': maxWeightDate,
+      if (maxVolumeDate != null) 'max_volume_date': maxVolumeDate,
+    });
+  }
+
+  PersonalRecordsCompanion copyWith(
+      {Value<int>? prID,
+      Value<int>? workoutID,
+      Value<double>? maxWeight,
+      Value<int>? maxWeightReps,
+      Value<double>? maxVolumeWeight,
+      Value<int>? maxVolumeReps,
+      Value<DateTime>? maxWeightDate,
+      Value<DateTime>? maxVolumeDate}) {
+    return PersonalRecordsCompanion(
+      prID: prID ?? this.prID,
+      workoutID: workoutID ?? this.workoutID,
+      maxWeight: maxWeight ?? this.maxWeight,
+      maxWeightReps: maxWeightReps ?? this.maxWeightReps,
+      maxVolumeWeight: maxVolumeWeight ?? this.maxVolumeWeight,
+      maxVolumeReps: maxVolumeReps ?? this.maxVolumeReps,
+      maxWeightDate: maxWeightDate ?? this.maxWeightDate,
+      maxVolumeDate: maxVolumeDate ?? this.maxVolumeDate,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (prID.present) {
+      map['pr_i_d'] = Variable<int>(prID.value);
+    }
+    if (workoutID.present) {
+      map['workout_i_d'] = Variable<int>(workoutID.value);
+    }
+    if (maxWeight.present) {
+      map['max_weight'] = Variable<double>(maxWeight.value);
+    }
+    if (maxWeightReps.present) {
+      map['max_weight_reps'] = Variable<int>(maxWeightReps.value);
+    }
+    if (maxVolumeWeight.present) {
+      map['max_volume_weight'] = Variable<double>(maxVolumeWeight.value);
+    }
+    if (maxVolumeReps.present) {
+      map['max_volume_reps'] = Variable<int>(maxVolumeReps.value);
+    }
+    if (maxWeightDate.present) {
+      map['max_weight_date'] = Variable<DateTime>(maxWeightDate.value);
+    }
+    if (maxVolumeDate.present) {
+      map['max_volume_date'] = Variable<DateTime>(maxVolumeDate.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PersonalRecordsCompanion(')
+          ..write('prID: $prID, ')
+          ..write('workoutID: $workoutID, ')
+          ..write('maxWeight: $maxWeight, ')
+          ..write('maxWeightReps: $maxWeightReps, ')
+          ..write('maxVolumeWeight: $maxVolumeWeight, ')
+          ..write('maxVolumeReps: $maxVolumeReps, ')
+          ..write('maxWeightDate: $maxWeightDate, ')
+          ..write('maxVolumeDate: $maxVolumeDate')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -968,12 +1413,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $WorkoutsTable workouts = $WorkoutsTable(this);
   late final $LogsTable logs = $LogsTable(this);
   late final $LogSetsTable logSets = $LogSetsTable(this);
+  late final $PersonalRecordsTable personalRecords =
+      $PersonalRecordsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [muscleGroups, workouts, logs, logSets];
+      [muscleGroups, workouts, logs, logSets, personalRecords];
 }
 
 typedef $$MuscleGroupsTableCreateCompanionBuilder = MuscleGroupsCompanion
@@ -1239,6 +1686,24 @@ final class $$WorkoutsTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$PersonalRecordsTable, List<PersonalRecord>>
+      _personalRecordsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.personalRecords,
+              aliasName: $_aliasNameGenerator(
+                  db.workouts.workoutID, db.personalRecords.workoutID));
+
+  $$PersonalRecordsTableProcessedTableManager get personalRecordsRefs {
+    final manager = $$PersonalRecordsTableTableManager(
+            $_db, $_db.personalRecords)
+        .filter((f) =>
+            f.workoutID.workoutID.sqlEquals($_itemColumn<int>('workout_i_d')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_personalRecordsRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$WorkoutsTableFilterComposer
@@ -1289,6 +1754,27 @@ class $$WorkoutsTableFilterComposer
             $$LogsTableFilterComposer(
               $db: $db,
               $table: $db.logs,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
+
+  Expression<bool> personalRecordsRefs(
+      Expression<bool> Function($$PersonalRecordsTableFilterComposer f) f) {
+    final $$PersonalRecordsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutID,
+        referencedTable: $db.personalRecords,
+        getReferencedColumn: (t) => t.workoutID,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PersonalRecordsTableFilterComposer(
+              $db: $db,
+              $table: $db.personalRecords,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -1389,6 +1875,27 @@ class $$WorkoutsTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> personalRecordsRefs<T extends Object>(
+      Expression<T> Function($$PersonalRecordsTableAnnotationComposer a) f) {
+    final $$PersonalRecordsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutID,
+        referencedTable: $db.personalRecords,
+        getReferencedColumn: (t) => t.workoutID,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$PersonalRecordsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.personalRecords,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$WorkoutsTableTableManager extends RootTableManager<
@@ -1402,7 +1909,8 @@ class $$WorkoutsTableTableManager extends RootTableManager<
     $$WorkoutsTableUpdateCompanionBuilder,
     (Workout, $$WorkoutsTableReferences),
     Workout,
-    PrefetchHooks Function({bool groupID, bool logsRefs})> {
+    PrefetchHooks Function(
+        {bool groupID, bool logsRefs, bool personalRecordsRefs})> {
   $$WorkoutsTableTableManager(_$AppDatabase db, $WorkoutsTable table)
       : super(TableManagerState(
           db: db,
@@ -1437,10 +1945,16 @@ class $$WorkoutsTableTableManager extends RootTableManager<
               .map((e) =>
                   (e.readTable(table), $$WorkoutsTableReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({groupID = false, logsRefs = false}) {
+          prefetchHooksCallback: (
+              {groupID = false,
+              logsRefs = false,
+              personalRecordsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [if (logsRefs) db.logs],
+              explicitlyWatchedTables: [
+                if (logsRefs) db.logs,
+                if (personalRecordsRefs) db.personalRecords
+              ],
               addJoins: <
                   T extends TableManagerState<
                       dynamic,
@@ -1479,6 +1993,19 @@ class $$WorkoutsTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.workoutID == item.workoutID),
+                        typedResults: items),
+                  if (personalRecordsRefs)
+                    await $_getPrefetchedData<Workout, $WorkoutsTable,
+                            PersonalRecord>(
+                        currentTable: table,
+                        referencedTable: $$WorkoutsTableReferences
+                            ._personalRecordsRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$WorkoutsTableReferences(db, table, p0)
+                                .personalRecordsRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.workoutID == item.workoutID),
                         typedResults: items)
                 ];
               },
@@ -1498,7 +2025,8 @@ typedef $$WorkoutsTableProcessedTableManager = ProcessedTableManager<
     $$WorkoutsTableUpdateCompanionBuilder,
     (Workout, $$WorkoutsTableReferences),
     Workout,
-    PrefetchHooks Function({bool groupID, bool logsRefs})>;
+    PrefetchHooks Function(
+        {bool groupID, bool logsRefs, bool personalRecordsRefs})>;
 typedef $$LogsTableCreateCompanionBuilder = LogsCompanion Function({
   Value<int> logID,
   required int workoutID,
@@ -2062,6 +2590,329 @@ typedef $$LogSetsTableProcessedTableManager = ProcessedTableManager<
     (LogSet, $$LogSetsTableReferences),
     LogSet,
     PrefetchHooks Function({bool logID})>;
+typedef $$PersonalRecordsTableCreateCompanionBuilder = PersonalRecordsCompanion
+    Function({
+  Value<int> prID,
+  required int workoutID,
+  required double maxWeight,
+  required int maxWeightReps,
+  required double maxVolumeWeight,
+  required int maxVolumeReps,
+  required DateTime maxWeightDate,
+  required DateTime maxVolumeDate,
+});
+typedef $$PersonalRecordsTableUpdateCompanionBuilder = PersonalRecordsCompanion
+    Function({
+  Value<int> prID,
+  Value<int> workoutID,
+  Value<double> maxWeight,
+  Value<int> maxWeightReps,
+  Value<double> maxVolumeWeight,
+  Value<int> maxVolumeReps,
+  Value<DateTime> maxWeightDate,
+  Value<DateTime> maxVolumeDate,
+});
+
+final class $$PersonalRecordsTableReferences extends BaseReferences<
+    _$AppDatabase, $PersonalRecordsTable, PersonalRecord> {
+  $$PersonalRecordsTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $WorkoutsTable _workoutIDTable(_$AppDatabase db) =>
+      db.workouts.createAlias($_aliasNameGenerator(
+          db.personalRecords.workoutID, db.workouts.workoutID));
+
+  $$WorkoutsTableProcessedTableManager get workoutID {
+    final $_column = $_itemColumn<int>('workout_i_d')!;
+
+    final manager = $$WorkoutsTableTableManager($_db, $_db.workouts)
+        .filter((f) => f.workoutID.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_workoutIDTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$PersonalRecordsTableFilterComposer
+    extends Composer<_$AppDatabase, $PersonalRecordsTable> {
+  $$PersonalRecordsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get prID => $composableBuilder(
+      column: $table.prID, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get maxWeight => $composableBuilder(
+      column: $table.maxWeight, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get maxWeightReps => $composableBuilder(
+      column: $table.maxWeightReps, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get maxVolumeWeight => $composableBuilder(
+      column: $table.maxVolumeWeight,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get maxVolumeReps => $composableBuilder(
+      column: $table.maxVolumeReps, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get maxWeightDate => $composableBuilder(
+      column: $table.maxWeightDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get maxVolumeDate => $composableBuilder(
+      column: $table.maxVolumeDate, builder: (column) => ColumnFilters(column));
+
+  $$WorkoutsTableFilterComposer get workoutID {
+    final $$WorkoutsTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutID,
+        referencedTable: $db.workouts,
+        getReferencedColumn: (t) => t.workoutID,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkoutsTableFilterComposer(
+              $db: $db,
+              $table: $db.workouts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PersonalRecordsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PersonalRecordsTable> {
+  $$PersonalRecordsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get prID => $composableBuilder(
+      column: $table.prID, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get maxWeight => $composableBuilder(
+      column: $table.maxWeight, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get maxWeightReps => $composableBuilder(
+      column: $table.maxWeightReps,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get maxVolumeWeight => $composableBuilder(
+      column: $table.maxVolumeWeight,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get maxVolumeReps => $composableBuilder(
+      column: $table.maxVolumeReps,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get maxWeightDate => $composableBuilder(
+      column: $table.maxWeightDate,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get maxVolumeDate => $composableBuilder(
+      column: $table.maxVolumeDate,
+      builder: (column) => ColumnOrderings(column));
+
+  $$WorkoutsTableOrderingComposer get workoutID {
+    final $$WorkoutsTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutID,
+        referencedTable: $db.workouts,
+        getReferencedColumn: (t) => t.workoutID,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkoutsTableOrderingComposer(
+              $db: $db,
+              $table: $db.workouts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PersonalRecordsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PersonalRecordsTable> {
+  $$PersonalRecordsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get prID =>
+      $composableBuilder(column: $table.prID, builder: (column) => column);
+
+  GeneratedColumn<double> get maxWeight =>
+      $composableBuilder(column: $table.maxWeight, builder: (column) => column);
+
+  GeneratedColumn<int> get maxWeightReps => $composableBuilder(
+      column: $table.maxWeightReps, builder: (column) => column);
+
+  GeneratedColumn<double> get maxVolumeWeight => $composableBuilder(
+      column: $table.maxVolumeWeight, builder: (column) => column);
+
+  GeneratedColumn<int> get maxVolumeReps => $composableBuilder(
+      column: $table.maxVolumeReps, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get maxWeightDate => $composableBuilder(
+      column: $table.maxWeightDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get maxVolumeDate => $composableBuilder(
+      column: $table.maxVolumeDate, builder: (column) => column);
+
+  $$WorkoutsTableAnnotationComposer get workoutID {
+    final $$WorkoutsTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.workoutID,
+        referencedTable: $db.workouts,
+        getReferencedColumn: (t) => t.workoutID,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$WorkoutsTableAnnotationComposer(
+              $db: $db,
+              $table: $db.workouts,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$PersonalRecordsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $PersonalRecordsTable,
+    PersonalRecord,
+    $$PersonalRecordsTableFilterComposer,
+    $$PersonalRecordsTableOrderingComposer,
+    $$PersonalRecordsTableAnnotationComposer,
+    $$PersonalRecordsTableCreateCompanionBuilder,
+    $$PersonalRecordsTableUpdateCompanionBuilder,
+    (PersonalRecord, $$PersonalRecordsTableReferences),
+    PersonalRecord,
+    PrefetchHooks Function({bool workoutID})> {
+  $$PersonalRecordsTableTableManager(
+      _$AppDatabase db, $PersonalRecordsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PersonalRecordsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PersonalRecordsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PersonalRecordsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> prID = const Value.absent(),
+            Value<int> workoutID = const Value.absent(),
+            Value<double> maxWeight = const Value.absent(),
+            Value<int> maxWeightReps = const Value.absent(),
+            Value<double> maxVolumeWeight = const Value.absent(),
+            Value<int> maxVolumeReps = const Value.absent(),
+            Value<DateTime> maxWeightDate = const Value.absent(),
+            Value<DateTime> maxVolumeDate = const Value.absent(),
+          }) =>
+              PersonalRecordsCompanion(
+            prID: prID,
+            workoutID: workoutID,
+            maxWeight: maxWeight,
+            maxWeightReps: maxWeightReps,
+            maxVolumeWeight: maxVolumeWeight,
+            maxVolumeReps: maxVolumeReps,
+            maxWeightDate: maxWeightDate,
+            maxVolumeDate: maxVolumeDate,
+          ),
+          createCompanionCallback: ({
+            Value<int> prID = const Value.absent(),
+            required int workoutID,
+            required double maxWeight,
+            required int maxWeightReps,
+            required double maxVolumeWeight,
+            required int maxVolumeReps,
+            required DateTime maxWeightDate,
+            required DateTime maxVolumeDate,
+          }) =>
+              PersonalRecordsCompanion.insert(
+            prID: prID,
+            workoutID: workoutID,
+            maxWeight: maxWeight,
+            maxWeightReps: maxWeightReps,
+            maxVolumeWeight: maxVolumeWeight,
+            maxVolumeReps: maxVolumeReps,
+            maxWeightDate: maxWeightDate,
+            maxVolumeDate: maxVolumeDate,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$PersonalRecordsTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({workoutID = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (workoutID) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.workoutID,
+                    referencedTable:
+                        $$PersonalRecordsTableReferences._workoutIDTable(db),
+                    referencedColumn: $$PersonalRecordsTableReferences
+                        ._workoutIDTable(db)
+                        .workoutID,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$PersonalRecordsTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $PersonalRecordsTable,
+    PersonalRecord,
+    $$PersonalRecordsTableFilterComposer,
+    $$PersonalRecordsTableOrderingComposer,
+    $$PersonalRecordsTableAnnotationComposer,
+    $$PersonalRecordsTableCreateCompanionBuilder,
+    $$PersonalRecordsTableUpdateCompanionBuilder,
+    (PersonalRecord, $$PersonalRecordsTableReferences),
+    PersonalRecord,
+    PrefetchHooks Function({bool workoutID})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2073,4 +2924,6 @@ class $AppDatabaseManager {
   $$LogsTableTableManager get logs => $$LogsTableTableManager(_db, _db.logs);
   $$LogSetsTableTableManager get logSets =>
       $$LogSetsTableTableManager(_db, _db.logSets);
+  $$PersonalRecordsTableTableManager get personalRecords =>
+      $$PersonalRecordsTableTableManager(_db, _db.personalRecords);
 }

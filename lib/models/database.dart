@@ -9,13 +9,13 @@ import 'package:path/path.dart' as p;
 part 'database.g.dart';
 
 @DriftDatabase(
-  tables: [MuscleGroups, Workouts, Logs, LogSets],
+  tables: [MuscleGroups, Workouts, Logs, LogSets, PersonalRecords],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -25,9 +25,173 @@ class AppDatabase extends _$AppDatabase {
           } else if (from == 2) {
             await m.addColumn(logs, logs.note);
             await customStatement('UPDATE logs SET note = notes');
+          } else if (from == 3) {
+            await m.createTable(personalRecords);
+          } else if (from == 4) {
+            // Calculate PRs for all existing workouts
+            await _calculateExistingPRs();
+          } else if (from == 5) {
+            // Drop and recreate PersonalRecords table with new schema
+            await m.deleteTable('personal_records');
+            await m.createTable(personalRecords);
+
+            // Recalculate all PRs with the new schema
+            await _calculateExistingPRsNew();
           }
         },
       );
+
+  // Calculate PRs for existing workouts during migration
+  Future<void> _calculateExistingPRs() async {
+    // Get all workouts from all muscle groups
+    final allGroups = await select(muscleGroups).get();
+
+    for (final group in allGroups) {
+      final workouts = await (select(this.workouts)
+            ..where((table) => table.groupID.equals(group.groupID)))
+          .get();
+
+      for (final workout in workouts) {
+        // Get all logs for this workout
+        final logs = await (select(this.logs)
+              ..where((table) => table.workoutID.equals(workout.workoutID)))
+            .get();
+
+        if (logs.isEmpty) continue;
+
+        double maxWeight = 0;
+        double maxVolumeTotal = 0;
+        double maxVolumeWeight = 0;
+        int maxWeightReps = 0;
+        int maxVolumeReps = 0;
+        DateTime? maxWeightDate;
+        DateTime? maxVolumeDate;
+
+        // Check all logs for this workout
+        for (final log in logs) {
+          final sets = await (select(logSets)
+                ..where((table) => table.logID.equals(log.logID)))
+              .get();
+
+          // Check all sets in this log
+          for (final set in sets) {
+            final weight = set.weight;
+            final reps = set.reps;
+            final volume = weight * reps;
+
+            // Check for new weight PR
+            if (weight > maxWeight) {
+              maxWeight = weight;
+              maxWeightReps = reps;
+              maxWeightDate = log.dt;
+            }
+
+            // Check for new volume PR
+            if (volume > maxVolumeTotal) {
+              maxVolumeTotal = volume;
+              maxVolumeWeight = weight;
+              maxVolumeReps = reps;
+              maxVolumeDate = log.dt;
+            }
+          }
+        }
+
+        // Only create PR record if we found valid data
+        if (maxWeight > 0 &&
+            maxVolumeTotal > 0 &&
+            maxWeightDate != null &&
+            maxVolumeDate != null) {
+          await into(personalRecords).insert(
+            PersonalRecordsCompanion(
+              workoutID: Value(workout.workoutID),
+              maxWeight: Value(maxWeight),
+              maxWeightReps: Value(maxWeightReps),
+              maxVolumeWeight: Value(maxVolumeWeight),
+              maxVolumeReps: Value(maxVolumeReps),
+              maxWeightDate: Value(maxWeightDate),
+              maxVolumeDate: Value(maxVolumeDate),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  // New migration function for the updated schema
+  Future<void> _calculateExistingPRsNew() async {
+    // Get all workouts from all muscle groups
+    final allGroups = await select(muscleGroups).get();
+
+    for (final group in allGroups) {
+      final workouts = await (select(this.workouts)
+            ..where((table) => table.groupID.equals(group.groupID)))
+          .get();
+
+      for (final workout in workouts) {
+        // Get all logs for this workout
+        final logs = await (select(this.logs)
+              ..where((table) => table.workoutID.equals(workout.workoutID)))
+            .get();
+
+        if (logs.isEmpty) continue;
+
+        double maxWeight = 0;
+        double maxVolumeTotal = 0;
+        double maxVolumeWeight = 0;
+        int maxWeightReps = 0;
+        int maxVolumeReps = 0;
+        DateTime? maxWeightDate;
+        DateTime? maxVolumeDate;
+
+        // Check all logs for this workout
+        for (final log in logs) {
+          final sets = await (select(logSets)
+                ..where((table) => table.logID.equals(log.logID)))
+              .get();
+
+          // Check all sets in this log
+          for (final set in sets) {
+            final weight = set.weight;
+            final reps = set.reps;
+            final volume = weight * reps;
+
+            // Check for new weight PR
+            if (weight > maxWeight) {
+              maxWeight = weight;
+              maxWeightReps = reps;
+              maxWeightDate = log.dt;
+            }
+
+            // Check for new volume PR
+            if (volume > maxVolumeTotal) {
+              maxVolumeTotal = volume;
+              maxVolumeWeight = weight;
+              maxVolumeReps = reps;
+              maxVolumeDate = log.dt;
+            }
+          }
+        }
+
+        // Only create PR record if we found valid data
+        if (maxWeight > 0 &&
+            maxVolumeTotal > 0 &&
+            maxWeightDate != null &&
+            maxVolumeDate != null) {
+          await into(personalRecords).insert(
+            PersonalRecordsCompanion(
+              workoutID: Value(workout.workoutID),
+              maxWeight: Value(maxWeight),
+              maxWeightReps: Value(maxWeightReps),
+              maxVolumeWeight: Value(maxVolumeWeight),
+              maxVolumeReps: Value(maxVolumeReps),
+              maxWeightDate: Value(maxWeightDate),
+              maxVolumeDate: Value(maxVolumeDate),
+            ),
+          );
+        }
+      }
+    }
+  }
 
   newGroup(String textInput, int colorInput) async {
     await into(muscleGroups).insert(MuscleGroupsCompanion(
@@ -133,6 +297,9 @@ class AppDatabase extends _$AppDatabase {
         set.copyWith(logID: Value(logId)),
       );
     }
+
+    // Update personal records after adding the sets
+    await updatePersonalRecords(workoutId, sets);
   }
 
   Future<void> deleteLogWithSets(int logId) async {
@@ -142,6 +309,11 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> updateLogWithSets(int logId, List<LogSetsCompanion> updatedSets,
       {String? note}) async {
+    // Get the workoutID for this log to update PRs
+    final log = await (select(logs)
+          ..where((table) => table.logID.equals(logId)))
+        .getSingle();
+
     // Update the notes for the log
     await (update(logs)..where((table) => table.logID.equals(logId))).write(
       LogsCompanion(note: Value(note)),
@@ -151,6 +323,97 @@ class AppDatabase extends _$AppDatabase {
     for (final set in updatedSets) {
       await into(logSets).insert(set.copyWith(logID: Value(logId)));
     }
+
+    // Update personal records after updating the sets
+    await updatePersonalRecords(log.workoutID, updatedSets);
+  }
+
+  // Personal Records Methods
+  Future<PersonalRecord?> fetchPersonalRecord(int workoutId) async {
+    final query = select(personalRecords)
+      ..where((table) => table.workoutID.equals(workoutId));
+    final results = await query.get();
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<List<PersonalRecord>> fetchAllPersonalRecords() async {
+    return await select(personalRecords).get();
+  }
+
+  Future<void> updatePersonalRecords(
+      int workoutId, List<LogSetsCompanion> sets) async {
+    // Calculate max weight and max volume from the current sets
+    double maxWeight = 0;
+    double maxVolumeTotal = 0;
+    double maxVolumeWeight = 0;
+    int maxWeightReps = 0;
+    int maxVolumeReps = 0;
+
+    for (final set in sets) {
+      final weight = set.weight.value;
+      final reps = set.reps.value;
+      final volume = weight * reps;
+
+      if (weight > maxWeight) {
+        maxWeight = weight;
+        maxWeightReps = reps;
+      }
+      if (volume > maxVolumeTotal) {
+        maxVolumeTotal = volume;
+        maxVolumeWeight = weight;
+        maxVolumeReps = reps;
+      }
+    }
+
+    // Get existing PR record
+    final existingPR = await fetchPersonalRecord(workoutId);
+    final now = DateTime.now();
+
+    if (existingPR == null) {
+      // Create new PR record
+      await into(personalRecords).insert(
+        PersonalRecordsCompanion(
+          workoutID: Value(workoutId),
+          maxWeight: Value(maxWeight),
+          maxWeightReps: Value(maxWeightReps),
+          maxVolumeWeight: Value(maxVolumeWeight),
+          maxVolumeReps: Value(maxVolumeReps),
+          maxWeightDate: Value(now),
+          maxVolumeDate: Value(now),
+        ),
+      );
+    } else {
+      // Update existing PR record if new records are achieved
+      bool weightPRBroken = maxWeight > existingPR.maxWeight;
+      bool volumePRBroken = maxVolumeTotal >
+          (existingPR.maxVolumeWeight * existingPR.maxVolumeReps);
+
+      if (weightPRBroken || volumePRBroken) {
+        await (update(personalRecords)
+              ..where((table) => table.workoutID.equals(workoutId)))
+            .write(
+          PersonalRecordsCompanion(
+            maxWeight: Value(weightPRBroken ? maxWeight : existingPR.maxWeight),
+            maxWeightReps: Value(
+                weightPRBroken ? maxWeightReps : existingPR.maxWeightReps),
+            maxVolumeWeight: Value(
+                volumePRBroken ? maxVolumeWeight : existingPR.maxVolumeWeight),
+            maxVolumeReps: Value(
+                volumePRBroken ? maxVolumeReps : existingPR.maxVolumeReps),
+            maxWeightDate:
+                Value(weightPRBroken ? now : existingPR.maxWeightDate),
+            maxVolumeDate:
+                Value(volumePRBroken ? now : existingPR.maxVolumeDate),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> deletePersonalRecord(int workoutId) async {
+    await (delete(personalRecords)
+          ..where((table) => table.workoutID.equals(workoutId)))
+        .go();
   }
 }
 

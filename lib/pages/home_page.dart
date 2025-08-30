@@ -641,7 +641,7 @@ class _HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: darkMode.colorScheme.surface,
+          backgroundColor: darkMode.colorScheme.primary,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             toolbarHeight: 60,
@@ -686,6 +686,7 @@ class _HomePageState extends State<HomePage> {
             },
             child: DecoratedBox(
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
                 image: DecorationImage(
                   image: const AssetImage('assets/images/personal_record.png'),
                   fit: BoxFit.cover,

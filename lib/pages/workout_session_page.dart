@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pr/models/database.dart';
 import 'package:pr/theme/theme.dart';
-import 'package:pr/pages/home_page.dart';
+import 'package:pr/main.dart';
 import 'package:drift/drift.dart' show Value;
 
 //TODO: if the user hits the back button on their phone, it should prompt to end the workout
@@ -659,7 +659,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
     // Navigate back to home page
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => HomePage()),
+      MaterialPageRoute(builder: (context) => RootPage()),
       (route) => false, // Remove all previous routes
     );
   }

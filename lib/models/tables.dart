@@ -25,3 +25,17 @@ class LogSets extends Table {
   RealColumn get weight => real()();
   IntColumn get reps => integer()();
 }
+
+class PersonalRecords extends Table {
+  IntColumn get prID => integer().autoIncrement()();
+  IntColumn get workoutID => integer().references(Workouts, #workoutID)();
+  RealColumn get maxWeight => real()(); // Highest weight for at least 1 rep
+  IntColumn get maxWeightReps => integer()(); // Reps for the max weight
+  RealColumn get maxVolumeWeight =>
+      real()(); // Weight component of the highest volume set
+  IntColumn get maxVolumeReps => integer()(); // Reps for the max volume set
+  DateTimeColumn get maxWeightDate =>
+      dateTime()(); // When max weight was achieved
+  DateTimeColumn get maxVolumeDate =>
+      dateTime()(); // When max volume was achieved
+}
