@@ -220,6 +220,9 @@ class AppDatabase extends _$AppDatabase {
           ..where((table) => table.groupID.equals(id)))
         .get();
     for (final workout in groupWorkouts) {
+      // Delete PR records for this workout first
+      await deletePersonalRecord(workout.workoutID);
+
       final workoutLogs = await (select(logs)
             ..where((table) => table.workoutID.equals(workout.workoutID)))
           .get();
@@ -260,6 +263,9 @@ class AppDatabase extends _$AppDatabase {
   }
 
   deleteWorkout(int id) async {
+    // Delete PR records for this workout first
+    await deletePersonalRecord(id);
+
     final workoutLogs = await (select(logs)
           ..where((table) => table.workoutID.equals(id)))
         .get();
@@ -414,6 +420,29 @@ class AppDatabase extends _$AppDatabase {
     await (delete(personalRecords)
           ..where((table) => table.workoutID.equals(workoutId)))
         .go();
+  }
+
+  //debug, TODO: remove it later
+// Add to AppDatabase class
+  Future<void> debugPrintAllPRRecords() async {
+    print('=== ALL PERSONAL RECORDS ===');
+    final records = await select(personalRecords).get();
+
+    if (records.isEmpty) {
+      print('No PR records found');
+      return;
+    }
+
+    for (final pr in records) {
+      print('PR ID: ${pr.prID}');
+      print('  Workout ID: ${pr.workoutID}');
+      print('  Max Weight: ${pr.maxWeight} kg (${pr.maxWeightReps} reps)');
+      print(
+          '  Max Volume: ${pr.maxVolumeWeight} kg × ${pr.maxVolumeReps} reps = ${pr.maxVolumeWeight * pr.maxVolumeReps}');
+      print('  Max Weight Date: ${pr.maxWeightDate}');
+      print('  Max Volume Date: ${pr.maxVolumeDate}');
+      print('---');
+    }
   }
 }
 

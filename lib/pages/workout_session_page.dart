@@ -45,12 +45,16 @@ class WorkoutCard extends StatelessWidget {
   final WorkoutLog workoutLog;
   final VoidCallback onFinish; //TODO: investigate this more later
   final VoidCallback onUpdate;
+  final String prPreference;
+  final AppDatabase db;
 
   const WorkoutCard({
     super.key,
     required this.workoutLog,
     required this.onFinish,
     required this.onUpdate,
+    required this.prPreference,
+    required this.db,
   });
 
   @override
@@ -73,7 +77,82 @@ class WorkoutCard extends StatelessWidget {
                 fontSize: 18,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+
+            // PR Display
+            FutureBuilder<PersonalRecord?>(
+              future: db.fetchPersonalRecord(workoutLog.workout.workoutID),
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data != null) {
+                  final pr = snapshot.data!;
+                  final isWeightPR = prPreference == 'weight';
+                  final prWeight =
+                      isWeightPR ? pr.maxWeight : pr.maxVolumeWeight;
+                  final prReps =
+                      isWeightPR ? pr.maxWeightReps : pr.maxVolumeReps;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 40,
+                          child: Text(
+                            'PR:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromARGB(255, 125, 125, 125),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: darkMode.colorScheme.primary
+                                    .withOpacity(0.5)),
+                            borderRadius: BorderRadius.circular(8),
+                            color:
+                                darkMode.colorScheme.primary.withOpacity(0.1),
+                          ),
+                          child: Text(
+                            "${prWeight.toStringAsFixed(1)} kg",
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 125, 125, 125),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: darkMode.colorScheme.primary
+                                    .withOpacity(0.5)),
+                            borderRadius: BorderRadius.circular(8),
+                            color:
+                                darkMode.colorScheme.primary.withOpacity(0.1),
+                          ),
+                          child: Text(
+                            "${prReps.toString()} reps",
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 125, 125, 125),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
 
             // Sets input (only if not finished)
             if (!workoutLog.isFinished) ...[
@@ -280,6 +359,7 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
   final TextEditingController _newWorkoutController = TextEditingController();
   bool _isAddingNewWorkout = false;
   List<int> finishedWorkoutIds = []; // Track workouts that have been finished
+  String prPreference = 'weight'; // 'weight' or 'volume'
 
   @override
   void initState() {
@@ -647,6 +727,56 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
     }
   }
 
+  void showEndWorkoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: darkMode.colorScheme.secondary,
+          title: Text(
+            'End Workout',
+            style: TextStyle(
+              color: darkMode.colorScheme.inversePrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to end this workout session?',
+            style: TextStyle(
+              color: darkMode.colorScheme.inversePrimary,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: darkMode.colorScheme.primary,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                endWorkout(); // End the workout
+              },
+              child: Text(
+                'End Workout',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void endWorkout() {
     // Clear all workout-related lists and data
     setState(() {
@@ -675,13 +805,43 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
         backgroundColor: darkMode.colorScheme.primary,
         foregroundColor: darkMode.colorScheme.inversePrimary,
         actions: [
+          // Preferences dropdown
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: darkMode.colorScheme.secondary,
+            ),
+            child: DropdownButton<String>(
+              value: prPreference,
+              dropdownColor: darkMode.colorScheme.secondary,
+              style: TextStyle(color: darkMode.colorScheme.inversePrimary),
+              underline: Container(),
+              items: [
+                DropdownMenuItem(
+                  value: 'weight',
+                  child: Text('Weight PR'),
+                ),
+                DropdownMenuItem(
+                  value: 'volume',
+                  child: Text('Volume PR'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  prPreference = value!;
+                });
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
           DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: Colors.red,
             ),
             child: TextButton(
-              onPressed: endWorkout,
+              onPressed: () => showEndWorkoutDialog(),
               child: Text(
                 'End Workout',
                 style: TextStyle(
@@ -727,6 +887,8 @@ class _WorkoutSessionPageState extends State<WorkoutSessionPage> {
                           workoutLog: workoutLog,
                           onFinish: () => finishWorkout(workoutLog),
                           onUpdate: () => setState(() {}),
+                          prPreference: prPreference,
+                          db: db,
                         );
                       },
                     ),

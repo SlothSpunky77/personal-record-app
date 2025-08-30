@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pr/models/database.dart';
 import 'package:pr/pages/calendar_page.dart';
 import 'package:pr/pages/onboard.dart';
 import 'package:pr/pages/pr_page.dart';
@@ -11,6 +12,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Database().initializeGroup();
   // await Database().initializeWorkout();
+  //TODO remove this later
+  // Debug: Print all PR records
+  final db = AppDatabase();
+  await db.debugPrintAllPRRecords();
   runApp(const MyApp());
 }
 
