@@ -6,8 +6,12 @@ import 'package:pr/models/database.dart';
 class LogPage extends StatefulWidget {
   final String workoutName;
   final int workoutId;
+  final int? highlightLogId;
   const LogPage(
-      {super.key, required this.workoutName, required this.workoutId});
+      {super.key,
+      required this.workoutName,
+      required this.workoutId,
+      this.highlightLogId});
 
   @override
   State<LogPage> createState() => _LogPageState();
@@ -32,11 +36,18 @@ class _LogPageState extends State<LogPage> {
   final db = AppDatabase();
   int? selectedLogIndex;
   TextEditingController noteController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     fetchLogsandSets();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchLogsandSets() async {
@@ -47,6 +58,48 @@ class _LogPageState extends State<LogPage> {
       logWithSets.add(LogWithSets(log, sets));
     }
     setState(() {});
+
+    // Auto-scroll to highlighted log if specified
+    if (widget.highlightLogId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToHighlightedLog();
+      });
+    }
+  }
+
+  void _scrollToHighlightedLog() {
+    if (widget.highlightLogId == null || logWithSets.isEmpty) return;
+
+    // Reverse the list to match the display order
+    final reversedLogWithSets = logWithSets.reversed.toList();
+
+    // Find the index of the highlighted log
+    final highlightIndex = reversedLogWithSets.indexWhere(
+      (logWithSet) => logWithSet.log.logID == widget.highlightLogId,
+    );
+
+    if (highlightIndex != -1 && _scrollController.hasClients) {
+      // Add a small delay to ensure the list is fully rendered
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (_scrollController.hasClients) {
+          // Calculate position - each item is approximately 120-150 pixels tall
+          // We'll use a conservative estimate and scroll a bit above the target
+          final double itemHeight = 160.0;
+          final double targetPosition =
+              ((highlightIndex + 1 + 20) * itemHeight).clamp(
+            0.0,
+            _scrollController.position.maxScrollExtent,
+          );
+
+          // Scroll to the highlighted log with animation
+          _scrollController.animateTo(
+            targetPosition,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
   }
 
   Future<void> addLogs() async {
@@ -632,6 +685,7 @@ class _LogPageState extends State<LogPage> {
                           logWithSets = logWithSets.reversed.toList();
 
                           return ListView.builder(
+                            controller: _scrollController,
                             itemCount: logWithSets.length,
                             itemBuilder: (context, logIndex) {
                               final logWithSet = logWithSets[logIndex];
@@ -660,75 +714,89 @@ class _LogPageState extends State<LogPage> {
                                       : Colors.grey[900],
                                   margin: const EdgeInsets.symmetric(
                                       vertical: 6, horizontal: 2),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              '$dateStr $timeStr',
-                                              style: const TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 14),
+                                  child: Container(
+                                    decoration: widget.highlightLogId != null &&
+                                            log.logID == widget.highlightLogId
+                                        ? BoxDecoration(
+                                            border: Border.all(
+                                              color: darkMode
+                                                  .colorScheme.inversePrimary,
+                                              width: 1,
                                             ),
-                                          ],
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: List.generate(sets.length,
-                                              (setIndex) {
-                                            final set = sets[setIndex];
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 2.0),
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    'Set ${setIndex + 1}:',
-                                                    style: TextStyle(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          )
+                                        : null,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '$dateStr $timeStr',
+                                                style: const TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 14),
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: List.generate(sets.length,
+                                                (setIndex) {
+                                              final set = sets[setIndex];
+                                              return Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 2.0),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      'Set ${setIndex + 1}:',
+                                                      style: TextStyle(
+                                                          color: darkMode
+                                                              .colorScheme
+                                                              .inversePrimary,
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.w500),
+                                                    ),
+                                                    Text(
+                                                      ' Weight: ${set.weight}, Reps: ${set.reps}',
+                                                      style: TextStyle(
                                                         color: darkMode
                                                             .colorScheme
                                                             .inversePrimary,
                                                         fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                                  ),
-                                                  Text(
-                                                    ' Weight: ${set.weight}, Reps: ${set.reps}',
-                                                    style: TextStyle(
-                                                      color: darkMode
-                                                          .colorScheme
-                                                          .inversePrimary,
-                                                      fontSize: 18,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }),
-                                        ),
-                                        if (log.note != null &&
-                                            log.note!.isNotEmpty) ...[
-                                          const SizedBox(height: 5),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10, right: 10),
-                                            child: Text(
-                                              'Note: ${log.note}',
-                                              style: TextStyle(
-                                                color: Colors.amber[200],
-                                                fontSize: 15,
-                                                fontStyle: FontStyle.italic,
+                                                  ],
+                                                ),
+                                              );
+                                            }),
+                                          ),
+                                          if (log.note != null &&
+                                              log.note!.isNotEmpty) ...[
+                                            const SizedBox(height: 5),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10, right: 10),
+                                              child: Text(
+                                                'Note: ${log.note}',
+                                                style: TextStyle(
+                                                  color: Colors.amber[200],
+                                                  fontSize: 15,
+                                                  fontStyle: FontStyle.italic,
+                                                ),
                                               ),
                                             ),
-                                          ),
+                                          ],
                                         ],
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),

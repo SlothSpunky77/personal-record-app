@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pr/theme/theme.dart';
 import 'package:pr/models/database.dart';
+import 'package:pr/pages/log_page.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -294,36 +295,52 @@ class _CalendarPageState extends State<CalendarPage>
                 final log = row.readTable(db.logs);
                 final workout = row.readTable(db.workouts);
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: darkMode.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: darkMode.colorScheme.primary.withOpacity(0.3),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context)
+                        .pop(); // Close the current dialog first
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => LogPage(
+                          workoutName: workout.name,
+                          workoutId: workout.workoutID,
+                          highlightLogId: log.logID,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: darkMode.colorScheme.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: darkMode.colorScheme.primary.withOpacity(0.3),
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        workout.name, // This now shows the actual workout name
-                        style: TextStyle(
-                          color: Colors.green.shade300,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          workout
+                              .name, // This now shows the actual workout name
+                          style: TextStyle(
+                            color: Colors.green.shade300,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Time: ${DateFormat('HH:mm').format(log.dt)}',
-                        style: TextStyle(
-                          color: darkMode.colorScheme.inversePrimary,
-                          fontSize: 14,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Time: ${DateFormat('HH:mm').format(log.dt)}',
+                          style: TextStyle(
+                            color: darkMode.colorScheme.inversePrimary,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
