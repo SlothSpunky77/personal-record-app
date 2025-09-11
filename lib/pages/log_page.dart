@@ -83,20 +83,33 @@ class _LogPageState extends State<LogPage> {
       Future.delayed(const Duration(milliseconds: 50), () {
         if (_scrollController.hasClients) {
           // Calculate position - each item is approximately 120-150 pixels tall
-          // We'll use a conservative estimate and scroll a bit above the target
-          final double itemHeight = 160.0;
-          final double targetPosition =
-              ((highlightIndex + 1 + 20) * itemHeight).clamp(
-            0.0,
-            _scrollController.position.maxScrollExtent,
-          );
+          final double itemHeight = 150.0;
+          final double targetPosition = highlightIndex * itemHeight;
 
-          // Scroll to the highlighted log with animation
-          _scrollController.animateTo(
-            targetPosition,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
+          // Get current viewport
+          final double viewportHeight =
+              _scrollController.position.viewportDimension;
+          final double currentScrollPosition =
+              _scrollController.position.pixels;
+
+          // Check if the item is already visible in the viewport
+          final bool isItemVisible = targetPosition >= currentScrollPosition &&
+              targetPosition <= currentScrollPosition + viewportHeight;
+
+          // Only scroll if the item is not currently visible
+          if (!isItemVisible) {
+            // Calculate the ideal scroll position to center the item
+            final double idealPosition =
+                (targetPosition - (viewportHeight / 2) + (itemHeight / 2))
+                    .clamp(0.0, _scrollController.position.maxScrollExtent);
+
+            // Scroll to the highlighted log with animation
+            _scrollController.animateTo(
+              idealPosition,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+            );
+          }
         }
       });
     }
@@ -295,8 +308,9 @@ class _LogPageState extends State<LogPage> {
   }
 
   void showUpdateLogDialog(int logIndex) {
-    final log = logWithSets[logIndex].log;
-    final sets = logWithSets[logIndex].sets;
+    final revLogWithSets = logWithSets.reversed.toList();
+    final log = revLogWithSets[logIndex].log;
+    final sets = revLogWithSets[logIndex].sets;
     List<_SetInput> updateInputs = sets.map((set) {
       final input = _SetInput();
       input.weightController.text = set.weight.toString();
@@ -481,8 +495,9 @@ class _LogPageState extends State<LogPage> {
   }
 
   void deleteLogDialog(int logIndex) {
-    final log = logWithSets[logIndex].log;
-    final sets = logWithSets[logIndex].sets;
+    final revLogWithSets = logWithSets.reversed.toList();
+    final log = revLogWithSets[logIndex].log;
+    final sets = revLogWithSets[logIndex].sets;
     final dt = log.dt;
     final dateStr =
         '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
@@ -682,13 +697,14 @@ class _LogPageState extends State<LogPage> {
                           ),
                         )
                       : Builder(builder: (context) {
-                          logWithSets = logWithSets.reversed.toList();
+                          final reversedLogWithSets =
+                              logWithSets.reversed.toList();
 
                           return ListView.builder(
                             controller: _scrollController,
                             itemCount: logWithSets.length,
                             itemBuilder: (context, logIndex) {
-                              final logWithSet = logWithSets[logIndex];
+                              final logWithSet = reversedLogWithSets[logIndex];
                               final log = logWithSet.log;
                               final sets = logWithSet.sets;
                               final dt = log.dt;

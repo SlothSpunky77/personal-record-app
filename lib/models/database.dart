@@ -15,7 +15,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -34,10 +34,14 @@ class AppDatabase extends _$AppDatabase {
             // Drop and recreate PersonalRecords table with new schema
             await m.deleteTable('personal_records');
             await m.createTable(personalRecords);
-
             // Recalculate all PRs with the new schema
-            await _calculateExistingPRsNew();
-          }
+            await _calculateExistingPRs();
+          } else if (from == 6 || from == 7 || from == 8 || from == 9) {
+            await _calculateExistingPRs();
+          } else if (from == 10) {}
+          // Clear ALL PR records and recalculate from scratch
+          await customStatement('DELETE FROM personal_records');
+          await _calculateExistingPRs();
         },
       );
 
@@ -59,11 +63,11 @@ class AppDatabase extends _$AppDatabase {
 
         if (logs.isEmpty) continue;
 
-        double maxWeight = 0;
-        double maxVolumeTotal = 0;
-        double maxVolumeWeight = 0;
-        int maxWeightReps = 0;
-        int maxVolumeReps = 0;
+        double maxWeight = -1;
+        double maxVolumeTotal = -1;
+        double maxVolumeWeight = -1;
+        int maxWeightReps = -1;
+        int maxVolumeReps = -1;
         DateTime? maxWeightDate;
         DateTime? maxVolumeDate;
 
@@ -84,6 +88,11 @@ class AppDatabase extends _$AppDatabase {
               maxWeight = weight;
               maxWeightReps = reps;
               maxWeightDate = log.dt;
+            } else if (weight == maxWeight) {
+              if (reps > maxWeightReps) {
+                maxWeightReps = reps;
+                maxWeightDate = log.dt;
+              }
             }
 
             // Check for new volume PR
@@ -97,84 +106,8 @@ class AppDatabase extends _$AppDatabase {
         }
 
         // Only create PR record if we found valid data
-        if (maxWeight > 0 &&
-            maxVolumeTotal > 0 &&
-            maxWeightDate != null &&
-            maxVolumeDate != null) {
-          await into(personalRecords).insert(
-            PersonalRecordsCompanion(
-              workoutID: Value(workout.workoutID),
-              maxWeight: Value(maxWeight),
-              maxWeightReps: Value(maxWeightReps),
-              maxVolumeWeight: Value(maxVolumeWeight),
-              maxVolumeReps: Value(maxVolumeReps),
-              maxWeightDate: Value(maxWeightDate),
-              maxVolumeDate: Value(maxVolumeDate),
-            ),
-          );
-        }
-      }
-    }
-  }
-
-  // New migration function for the updated schema
-  Future<void> _calculateExistingPRsNew() async {
-    // Get all workouts from all muscle groups
-    final allGroups = await select(muscleGroups).get();
-
-    for (final group in allGroups) {
-      final workouts = await (select(this.workouts)
-            ..where((table) => table.groupID.equals(group.groupID)))
-          .get();
-
-      for (final workout in workouts) {
-        // Get all logs for this workout
-        final logs = await (select(this.logs)
-              ..where((table) => table.workoutID.equals(workout.workoutID)))
-            .get();
-
-        if (logs.isEmpty) continue;
-
-        double maxWeight = 0;
-        double maxVolumeTotal = 0;
-        double maxVolumeWeight = 0;
-        int maxWeightReps = 0;
-        int maxVolumeReps = 0;
-        DateTime? maxWeightDate;
-        DateTime? maxVolumeDate;
-
-        // Check all logs for this workout
-        for (final log in logs) {
-          final sets = await (select(logSets)
-                ..where((table) => table.logID.equals(log.logID)))
-              .get();
-
-          // Check all sets in this log
-          for (final set in sets) {
-            final weight = set.weight;
-            final reps = set.reps;
-            final volume = weight * reps;
-
-            // Check for new weight PR
-            if (weight > maxWeight) {
-              maxWeight = weight;
-              maxWeightReps = reps;
-              maxWeightDate = log.dt;
-            }
-
-            // Check for new volume PR
-            if (volume > maxVolumeTotal) {
-              maxVolumeTotal = volume;
-              maxVolumeWeight = weight;
-              maxVolumeReps = reps;
-              maxVolumeDate = log.dt;
-            }
-          }
-        }
-
-        // Only create PR record if we found valid data
-        if (maxWeight > 0 &&
-            maxVolumeTotal > 0 &&
+        if (maxWeight >= 0 &&
+            maxVolumeTotal >= 0 &&
             maxWeightDate != null &&
             maxVolumeDate != null) {
           await into(personalRecords).insert(
@@ -349,11 +282,11 @@ class AppDatabase extends _$AppDatabase {
   Future<void> updatePersonalRecords(
       int workoutId, List<LogSetsCompanion> sets) async {
     // Calculate max weight and max volume from the current sets
-    double maxWeight = 0;
-    double maxVolumeTotal = 0;
-    double maxVolumeWeight = 0;
-    int maxWeightReps = 0;
-    int maxVolumeReps = 0;
+    double maxWeight = -1;
+    double maxVolumeTotal = -1;
+    double maxVolumeWeight = -1;
+    int maxWeightReps = -1;
+    int maxVolumeReps = -1;
 
     for (final set in sets) {
       final weight = set.weight.value;
@@ -363,6 +296,10 @@ class AppDatabase extends _$AppDatabase {
       if (weight > maxWeight) {
         maxWeight = weight;
         maxWeightReps = reps;
+      } else if (weight == maxWeight) {
+        if (reps > maxWeightReps) {
+          maxWeightReps = reps;
+        }
       }
       if (volume > maxVolumeTotal) {
         maxVolumeTotal = volume;
@@ -390,7 +327,9 @@ class AppDatabase extends _$AppDatabase {
       );
     } else {
       // Update existing PR record if new records are achieved
-      bool weightPRBroken = maxWeight > existingPR.maxWeight;
+      bool weightPRBroken = maxWeight > existingPR.maxWeight ||
+          (maxWeight == existingPR.maxWeight &&
+              maxWeightReps > existingPR.maxWeightReps);
       bool volumePRBroken = maxVolumeTotal >
           (existingPR.maxVolumeWeight * existingPR.maxVolumeReps);
 
